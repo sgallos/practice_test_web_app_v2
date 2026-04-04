@@ -68,6 +68,16 @@ function buildPublicLaunchUrl() {
   }
 }
 
+function buildStudentLaunchUrl() {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(ADMIN_QUERY_PARAM);
+    return url.toString();
+  } catch {
+    return window.location.href;
+  }
+}
+
 function copyText(value) {
   if (!navigator.clipboard || !navigator.clipboard.writeText) {
     return Promise.reject(new Error("Clipboard not available"));
@@ -335,6 +345,10 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const [copyReadyState, setCopyReadyState] = useState("idle");
   const [copyReadyAutoState, setCopyReadyAutoState] = useState("idle");
   const adminMode = exam.adminResetToken && getAdminTokenFromUrl() === exam.adminResetToken;
+  const displayedLaunchUrl = useMemo(
+    () => (adminMode ? launchUrl : buildStudentLaunchUrl()),
+    [adminMode, launchUrl]
+  );
   const startAuthorized = !exam.startAccessToken || getAccessTokenFromUrl() === exam.startAccessToken || adminMode;
   const readyStudentUrl = useMemo(
     () => buildAuthorizedStartUrl(launchUrl, exam.startAccessToken, false),
@@ -531,7 +545,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   async function copyLaunchLink() {
     try {
-      await copyText(launchUrl);
+      await copyText(displayedLaunchUrl);
       setCopyState("copied");
       window.setTimeout(() => setCopyState("idle"), 1500);
     } catch {
@@ -626,7 +640,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               "div",
               { className: "rounded-3xl border border-slate-200 bg-slate-50 p-4" },
               React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Launch link"),
-              React.createElement("p", { className: "mt-2 break-all text-sm text-slate-700" }, launchUrl),
+              React.createElement("p", { className: "mt-2 break-all text-sm text-slate-700" }, displayedLaunchUrl),
               React.createElement(
                 "div",
                 { className: "mt-3 flex flex-wrap gap-3" },
