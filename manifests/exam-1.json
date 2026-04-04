@@ -9,7 +9,7 @@
   "warningThresholdsSeconds": [
     1800,
     600,
-    120
+    300
   ],
   "questions": [
     {

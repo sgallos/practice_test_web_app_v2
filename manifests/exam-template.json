@@ -6,7 +6,7 @@
   "durationMinutes": 60,
   "adminResetToken": "replace-with-a-private-admin-token",
   "startAccessToken": "replace-with-a-private-start-token",
-  "warningThresholdsSeconds": [1800, 600, 120],
+  "warningThresholdsSeconds": [1800, 600, 300],
   "questions": [
     {
       "id": 1,

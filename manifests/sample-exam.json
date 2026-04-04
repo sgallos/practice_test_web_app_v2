@@ -6,7 +6,7 @@
   "durationMinutes": 60,
   "adminResetToken": "80aa2e8f-31be-4073-9c99-386015d03bb2",
   "startAccessToken": "dd4d17f1-a05d-4f03-b954-2527df51cf75",
-  "warningThresholdsSeconds": [1800, 600, 120],
+  "warningThresholdsSeconds": [1800, 600, 300],
   "questions": [
     {
       "id": 2,

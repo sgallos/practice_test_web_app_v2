@@ -1,7 +1,7 @@
 const { useEffect, useMemo, useState } = React;
 
 const DEFAULT_EXAM_MINUTES = 60;
-const DEFAULT_WARNING_THRESHOLDS = [30 * 60, 10 * 60, 2 * 60];
+const DEFAULT_WARNING_THRESHOLDS = [30 * 60, 10 * 60, 5 * 60];
 const EXAM_QUERY_PARAM = "exam";
 const MANIFEST_QUERY_PARAM = "manifest";
 const AUTO_START_PARAM = "start";
@@ -45,7 +45,7 @@ function formatTime(totalSeconds) {
 function warningText(seconds) {
   if (seconds === 1800) return "30 minute warning";
   if (seconds === 600) return "10 minute warning";
-  if (seconds === 120) return "2 minute warning";
+  if (seconds === 300) return "5 minute warning";
   return "Time warning";
 }
 
@@ -105,16 +105,6 @@ function normalizeQuestion(question, index, assetBaseUrl) {
     answerKeyImage: resolveAssetUrl(source.answerKeyImage || source.explanationImage || source.backImage || null, assetBaseUrl),
     correct: VALID_OPTIONS.includes(correct) ? correct : "",
   };
-}
-
-function buildAutoStartUrl(value) {
-  try {
-    const url = new URL(value, window.location.href);
-    url.searchParams.set(AUTO_START_PARAM, "true");
-    return url.toString();
-  } catch {
-    return value;
-  }
 }
 
 function buildAuthorizedStartUrl(value, accessToken, autoStart) {
@@ -344,7 +334,6 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const [copyState, setCopyState] = useState("idle");
   const [copyReadyState, setCopyReadyState] = useState("idle");
   const [copyReadyAutoState, setCopyReadyAutoState] = useState("idle");
-  const autoStartUrl = useMemo(() => buildAutoStartUrl(launchUrl), [launchUrl]);
   const adminMode = exam.adminResetToken && getAdminTokenFromUrl() === exam.adminResetToken;
   const startAuthorized = !exam.startAccessToken || getAccessTokenFromUrl() === exam.startAccessToken || adminMode;
   const readyStudentUrl = useMemo(
@@ -562,6 +551,10 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     }
   }
 
+  function triggerWarning(seconds) {
+    setActiveWarning(seconds);
+  }
+
   const resultsList = session.postExamFilter === "flagged" ? flaggedQuestions : questions;
 
   return React.createElement(
@@ -645,14 +638,6 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   },
                   copyState === "copied" ? "Link copied" : copyState === "error" ? "Copy failed" : "Copy launch link"
                 ),
-                React.createElement(
-                  "a",
-                  {
-                    href: autoStartUrl,
-                    className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100",
-                  },
-                  "Open auto-start link"
-                ),
                 adminMode &&
                   exam.startAccessToken &&
                   React.createElement(
@@ -692,6 +677,40 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   )
               )
             ),
+            adminMode &&
+              React.createElement(
+                "div",
+                { className: "rounded-3xl border border-slate-200 bg-slate-50 p-4" },
+                React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Admin warning triggers"),
+                React.createElement(
+                  "div",
+                  { className: "mt-3 flex flex-wrap gap-3" },
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: () => triggerWarning(1800),
+                      className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100",
+                    },
+                    "Trigger 30 min"
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: () => triggerWarning(600),
+                      className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100",
+                    },
+                    "Trigger 10 min"
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: () => triggerWarning(300),
+                      className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100",
+                    },
+                    "Trigger 5 min"
+                  )
+                )
+              ),
             React.createElement(
               "div",
               { className: "flex flex-wrap gap-3" },
@@ -815,6 +834,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 React.createElement("li", null, "You will have 75 minutes to complete 50 questions once the exam begins."),
                 React.createElement("li", null, "Answer each question by selecting A, B, C, or D."),
                 React.createElement("li", null, "Use the flag button to mark questions you want to revisit before submitting."),
+                React.createElement("li", null, "You will receive time warnings when 30 minutes, 10 minutes, and 5 minutes remain."),
                 React.createElement("li", null, "You can move between questions at any time and review answered, unanswered, and flagged items before submission."),
                 React.createElement("li", null, "After submission, you will be able to review the answer key images for each question.")
               )
@@ -1143,39 +1163,41 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                         "Next"
                       )
                     ),
-                    React.createElement(
-                      "button",
-                      {
-                        onClick: openReview,
-                        className: "rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700",
-                      },
-                      "Go to Final Review"
-                    )
+                    session.currentIndex === questions.length - 1 &&
+                      React.createElement(
+                        "button",
+                        {
+                          onClick: openReview,
+                          className: "rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700",
+                        },
+                        "Go to Final Review"
+                      )
                   )
                 )
             )
           ),
-      React.createElement(
-        "div",
-        { className: "mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200" },
-        React.createElement("h2", { className: "text-lg font-semibold tracking-tight" }, "Manifest fields"),
+      adminMode &&
         React.createElement(
           "div",
-          { className: "mt-3 grid gap-3 text-sm text-slate-700 md:grid-cols-2" },
+          { className: "mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200" },
+          React.createElement("h2", { className: "text-lg font-semibold tracking-tight" }, "Manifest fields"),
           React.createElement(
             "div",
-            { className: "rounded-2xl border border-slate-200 bg-slate-50 p-4" },
-            React.createElement("div", { className: "font-semibold" }, "Exam"),
-            React.createElement("p", { className: "mt-2 leading-6" }, "`id`, `title`, `description`, `durationMinutes`, `warningThresholdsSeconds`, `questions`")
-          ),
-          React.createElement(
-            "div",
-            { className: "rounded-2xl border border-slate-200 bg-slate-50 p-4" },
-            React.createElement("div", { className: "font-semibold" }, "Question"),
-            React.createElement("p", { className: "mt-2 leading-6" }, "`id`, `promptImage`, `figureImage`, `answerKeyImage`, `correct`")
+            { className: "mt-3 grid gap-3 text-sm text-slate-700 md:grid-cols-2" },
+            React.createElement(
+              "div",
+              { className: "rounded-2xl border border-slate-200 bg-slate-50 p-4" },
+              React.createElement("div", { className: "font-semibold" }, "Exam"),
+              React.createElement("p", { className: "mt-2 leading-6" }, "`id`, `title`, `description`, `durationMinutes`, `warningThresholdsSeconds`, `questions`")
+            ),
+            React.createElement(
+              "div",
+              { className: "rounded-2xl border border-slate-200 bg-slate-50 p-4" },
+              React.createElement("div", { className: "font-semibold" }, "Question"),
+              React.createElement("p", { className: "mt-2 leading-6" }, "`id`, `promptImage`, `figureImage`, `answerKeyImage`, `correct`")
+            )
           )
         )
-      )
     )
   );
 }
