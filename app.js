@@ -808,15 +808,15 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             React.createElement(
               "div",
               { className: "rounded-[2rem] bg-slate-950 p-8 text-slate-50 shadow-sm" },
-              React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-400" }, "How links work"),
+              React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-400" }, "Before you begin"),
               React.createElement(
                 "ul",
                 { className: "mt-5 space-y-4 text-sm leading-6 text-slate-300" },
-                React.createElement("li", null, "Use ?exam=sample-exam for a built-in test."),
-                React.createElement("li", null, "Use ?manifest=URL_TO_EXAM_JSON for a custom hosted exam manifest."),
-                React.createElement("li", null, "Add &start=true when you want the exam to begin as soon as the student opens the link."),
-                React.createElement("li", null, "If start access is configured, the public link stays locked until you send the startable student link from admin mode."),
-                React.createElement("li", null, "Progress is saved separately for each exam id in local storage.")
+                React.createElement("li", null, "You will have 75 minutes to complete 50 questions once the exam begins."),
+                React.createElement("li", null, "Answer each question by selecting A, B, C, or D."),
+                React.createElement("li", null, "Use the flag button to mark questions you want to revisit before submitting."),
+                React.createElement("li", null, "You can move between questions at any time and review answered, unanswered, and flagged items before submission."),
+                React.createElement("li", null, "After submission, you will be able to review the answer key images for each question.")
               )
             )
           )
