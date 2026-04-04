@@ -772,7 +772,15 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               React.createElement(
                 "p",
                 { className: "mt-3 text-sm leading-6 text-slate-600" },
-                "Students open the exam from a link, answer image-based questions with A through D selectors, flag items to revisit, review question status before submitting, and inspect answer key images after the timer ends or the exam is submitted."
+                "This exam follows a simple start, review, submit, and post-exam answer-key workflow."
+              ),
+              React.createElement(
+                "ol",
+                { className: "mt-5 space-y-3 text-sm leading-6 text-slate-700" },
+                React.createElement("li", null, "1. Start the exam and work through the questions in order or by navigation."),
+                React.createElement("li", null, "2. Flag any questions you want to revisit before submitting."),
+                React.createElement("li", null, "3. Reach the final question to unlock the final review screen."),
+                React.createElement("li", null, "4. Submit the exam and review the answer key images afterward.")
               ),
               React.createElement(
                 "div",
@@ -835,8 +843,8 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 React.createElement("li", null, "Answer each question by selecting A, B, C, or D."),
                 React.createElement("li", null, "Use the flag button to mark questions you want to revisit before submitting."),
                 React.createElement("li", null, "You will receive time warnings when 30 minutes, 10 minutes, and 5 minutes remain."),
-                React.createElement("li", null, "You can move between questions at any time and review answered, unanswered, and flagged items before submission."),
-                React.createElement("li", null, "After submission, you will be able to review the answer key images for each question.")
+                React.createElement("li", null, "The final review screen becomes available when you reach the last question."),
+                React.createElement("li", null, "After submission, you can review the answer key images for each question.")
               )
             )
           )
