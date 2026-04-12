@@ -337,6 +337,276 @@ function QuestionImage({ src, alt }) {
   });
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatAnswerForReport(value) {
+  return value ? String(value).toUpperCase() : "Unanswered";
+}
+
+function buildReportRows(questions, session) {
+  return questions.map((question, index) => {
+    const selectedAnswer = session.answers[question.id] || "";
+    const correctAnswer = question.correct || "";
+    return {
+      sequence: index + 1,
+      id: question.id,
+      selectedAnswer,
+      correctAnswer,
+      flagged: !!session.flagged[question.id],
+      correct: !!selectedAnswer && selectedAnswer === correctAnswer,
+    };
+  });
+}
+
+function buildReportTable(title, rows, emptyText) {
+  const body = rows.length
+    ? rows
+        .map(
+          (row) => `
+            <tr>
+              <td>${escapeHtml(row.sequence)}</td>
+              <td>${escapeHtml(row.id)}</td>
+              <td>${escapeHtml(formatAnswerForReport(row.selectedAnswer))}</td>
+              <td>${escapeHtml(formatAnswerForReport(row.correctAnswer))}</td>
+              <td>${row.flagged ? "Yes" : "No"}</td>
+            </tr>
+          `
+        )
+        .join("")
+    : `<tr><td colspan="5" class="empty">${escapeHtml(emptyText)}</td></tr>`;
+
+  return `
+    <section>
+      <h2>${escapeHtml(title)}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Question ID</th>
+            <th>Student Answer</th>
+            <th>Correct Answer</th>
+            <th>Flagged</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </section>
+  `;
+}
+
+function buildPrintableReportHtml({ exam, rows, score, answeredCount, flaggedCount, remainingSeconds }) {
+  const correctRows = rows.filter((row) => row.correct);
+  const incorrectRows = rows.filter((row) => !row.correct);
+  const unansweredCount = rows.length - answeredCount;
+  const generatedAt = new Date().toLocaleString();
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(exam.title)} Results Report</title>
+  <style>
+    :root {
+      color: #0f172a;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f8fafc;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .report {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgb(15 23 42 / 0.08);
+    }
+
+    .eyebrow {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 8px 0 8px;
+      font-size: 30px;
+      line-height: 1.15;
+    }
+
+    h2 {
+      margin: 32px 0 12px;
+      font-size: 20px;
+    }
+
+    .meta {
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .card {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 16px;
+      background: #f8fafc;
+    }
+
+    .card strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .card span {
+      display: block;
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .empty {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      background: #0f172a;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 16px;
+    }
+
+    .hint {
+      color: #64748b;
+      font-size: 13px;
+      margin: 0 0 24px;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      main {
+        max-width: none;
+        padding: 0;
+      }
+
+      .report {
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .actions,
+      .hint {
+        display: none;
+      }
+
+      section {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="actions">
+      <button onclick="window.print()">Print / Save as PDF</button>
+    </div>
+    <p class="hint">Use the print dialog destination "Save as PDF" to download this report.</p>
+    <article class="report">
+      <div class="eyebrow">Exam results report</div>
+      <h1>${escapeHtml(exam.title)}</h1>
+      <p class="meta">${escapeHtml(exam.description)}</p>
+      <p class="meta">Version ${escapeHtml(exam.version)} | Generated ${escapeHtml(generatedAt)} | Time remaining ${escapeHtml(
+        formatTime(remainingSeconds)
+      )}</p>
+      <div class="summary">
+        <div class="card"><strong>${escapeHtml(score)}/${escapeHtml(rows.length)}</strong><span>Score</span></div>
+        <div class="card"><strong>${escapeHtml(correctRows.length)}</strong><span>Correct</span></div>
+        <div class="card"><strong>${escapeHtml(incorrectRows.length)}</strong><span>Wrong</span></div>
+        <div class="card"><strong>${escapeHtml(unansweredCount)}</strong><span>Unanswered</span></div>
+        <div class="card"><strong>${escapeHtml(flaggedCount)}</strong><span>Flagged</span></div>
+      </div>
+      ${buildReportTable("Questions Wrong", incorrectRows, "No incorrect or unanswered questions.")}
+      ${buildReportTable("Questions Correct", correctRows, "No correct questions.")}
+    </article>
+  </main>
+</body>
+</html>`;
+}
+
 function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const storageKey = useMemo(() => buildStorageKey(exam), [exam]);
   const [session, setSession] = useState(() => loadSession(storageKey, exam, urlHasAutoStart()));
@@ -344,6 +614,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const [copyState, setCopyState] = useState("idle");
   const [copyReadyState, setCopyReadyState] = useState("idle");
   const [copyReadyAutoState, setCopyReadyAutoState] = useState("idle");
+  const [reportState, setReportState] = useState("idle");
   const adminMode = exam.adminResetToken && getAdminTokenFromUrl() === exam.adminResetToken;
   const displayedLaunchUrl = useMemo(
     () => (adminMode ? launchUrl : buildStudentLaunchUrl()),
@@ -373,6 +644,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     setCopyState("idle");
     setCopyReadyState("idle");
     setCopyReadyAutoState("idle");
+    setReportState("idle");
   }, [storageKey, exam]);
 
   useEffect(() => {
@@ -440,6 +712,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const answeredCount = questions.filter((question) => !!session.answers[question.id]).length;
   const flaggedCount = flaggedQuestions.length;
   const score = questions.reduce((total, question) => total + (session.answers[question.id] === question.correct ? 1 : 0), 0);
+  const reportRows = useMemo(() => buildReportRows(questions, session), [questions, session]);
 
   function updateSession(updater) {
     setSession((previous) => updater(previous));
@@ -514,7 +787,34 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     }
     setActiveWarning(null);
     setCopyState("idle");
+    setReportState("idle");
     setSession(createEmptySession(exam, false));
+  }
+
+  function openPrintableReport() {
+    if (!session.submitted) return;
+
+    const reportWindow = window.open("", "_blank");
+    if (!reportWindow) {
+      setReportState("blocked");
+      return;
+    }
+
+    const reportHtml = buildPrintableReportHtml({
+      exam,
+      rows: reportRows,
+      score,
+      answeredCount,
+      flaggedCount,
+      remainingSeconds: session.remainingSeconds,
+    });
+
+    reportWindow.document.open();
+    reportWindow.document.write(reportHtml);
+    reportWindow.document.close();
+    reportWindow.focus();
+    setReportState("opened");
+    window.setTimeout(() => setReportState("idle"), 2000);
   }
 
   function reviewClass(question, isCurrent) {
@@ -934,6 +1234,30 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               React.createElement("h2", { className: "text-2xl font-semibold tracking-tight" }, "Results"),
               React.createElement("p", { className: "mt-2 text-5xl font-bold tracking-tight text-slate-950" }, `${score}/${questions.length}`),
               React.createElement("p", { className: "mt-2 text-sm text-slate-600" }, "Use the filters below to review all questions or jump directly to the flagged ones."),
+              React.createElement(
+                "div",
+                { className: "mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4" },
+                React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "PDF report"),
+                React.createElement(
+                  "p",
+                  { className: "mt-2 text-sm leading-6 text-slate-600" },
+                  "Open a print-ready score report with questions wrong and questions correct. In the print dialog, choose Save as PDF."
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    onClick: openPrintableReport,
+                    className: "mt-3 w-full rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700",
+                  },
+                  reportState === "opened" ? "Report opened" : "Open printable report"
+                ),
+                reportState === "blocked" &&
+                  React.createElement(
+                    "p",
+                    { className: "mt-2 text-xs leading-5 text-rose-700" },
+                    "The report window was blocked. Allow popups for this site, then try again."
+                  )
+              ),
               React.createElement(
                 "div",
                 { className: "mt-5 flex flex-col gap-2" },
