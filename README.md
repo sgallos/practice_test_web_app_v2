@@ -26,6 +26,7 @@ practice_test_web_app_v2/
   favicon.svg
   manifests/
     exam-1.json
+    exam-2.json
   assets/
     exam-1/
       q001-front.png
@@ -184,6 +185,7 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - The sample content lives under `assets/sample-exam/` and `manifests/sample-exam.json`.
 - A production template is available at `manifests/exam-template.json`.
 - `manifests/exam-1.json` now contains the 50-question Chapter 1 Version 1 subset.
+- `manifests/exam-2.json` contains a separate 50-question Chapter 1 Version 2 subset shifted one source question forward from Version 1.
 - `manifests/chapter-1-full.json` preserves the full 425-question import.
 
 ## Netlify deployment
@@ -235,3 +237,41 @@ Notes:
 - `exams.js` sets `./manifests/exam-1.json` as the default manifest, so the base app URL opens Chapter 1 Version 1 automatically.
 
 If you want to create another exam later, start from `manifests/exam-template.json`.
+
+## Current Chapter 1 Version 2 exam
+
+The Version 2 manifest is:
+
+```text
+manifests/exam-2.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-2.json
+```
+
+Current `exam-2` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-2.json&admin=1b292e72-a68f-4782-a669-111b9558ec9c
+```
+
+Current `exam-2` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-2.json&access=34133e69-6fd8-4790-afb9-a76be446204b
+```
+
+Current `exam-2` released auto-start link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-2.json&access=34133e69-6fd8-4790-afb9-a76be446204b&start=true
+```
+
+Notes:
+- The exam contains 50 questions in the same order pattern as Version 1, with each source question id shifted forward by 1.
+- The timed duration is set to 75 minutes.
+- The imported media for these questions also lives in `assets/exam-1/`.
+- `exams.js` still sets `./manifests/exam-1.json` as the default manifest, so the base app URL still opens Chapter 1 Version 1 automatically.
