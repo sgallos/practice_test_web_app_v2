@@ -42,6 +42,18 @@ function formatTime(totalSeconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function formatDurationMinutes(totalMinutes) {
+  const totalSeconds = Math.round((Number(totalMinutes) || 0) * 60);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (seconds === 0) {
+    return `${minutes} minutes`;
+  }
+
+  return `${minutes} minutes ${seconds} seconds`;
+}
+
 function warningText(seconds) {
   if (seconds === 1800) return "30 minute warning";
   if (seconds === 600) return "10 minute warning";
@@ -1108,8 +1120,8 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 React.createElement(
                   "div",
                   { className: "rounded-3xl border border-slate-200 bg-slate-50 p-5" },
-                  React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, exam.durationMinutes),
-                  React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Minutes total")
+                  React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, formatDurationMinutes(exam.durationMinutes)),
+                  React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Total time")
                 ),
                 React.createElement(
                   "div",
@@ -1153,7 +1165,11 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               React.createElement(
                 "ul",
                 { className: "mt-5 space-y-4 text-sm leading-6 text-slate-300" },
-                React.createElement("li", null, "You will have 75 minutes to complete 50 questions once the exam begins."),
+                React.createElement(
+                  "li",
+                  null,
+                  `You will have ${formatDurationMinutes(exam.durationMinutes)} to complete ${questions.length} questions once the exam begins.`
+                ),
                 React.createElement("li", null, "Answer each question by selecting A, B, C, or D."),
                 React.createElement("li", null, "Use the flag button to mark questions you want to revisit before submitting."),
                 React.createElement("li", null, "You will receive time warnings when 30 minutes, 10 minutes, and 5 minutes remain."),
