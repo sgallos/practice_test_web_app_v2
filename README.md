@@ -28,6 +28,7 @@ practice_test_web_app_v2/
     exam-1.json
     exam-2.json
     chapter-4-v1.json
+    chapter-4-v2.json
   assets/
     exam-1/
       q001-front.png
@@ -192,6 +193,7 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - `manifests/exam-2.json` contains a separate 50-question Chapter 1 Version 2 subset shifted one source question forward from Version 1.
 - `manifests/chapter-1-full.json` preserves the full 425-question import.
 - `manifests/chapter-4-v1.json` contains the 43-question Chapter 4 Version 1 subset.
+- `manifests/chapter-4-v2.json` contains the 43-question Chapter 4 Version 2 subset.
 - `manifests/chapter-4-full.json` preserves the full 130-question Chapter 4 import.
 
 ## Netlify deployment
@@ -320,3 +322,41 @@ Notes:
 - The imported media for these questions lives in `assets/chapter-4/`.
 - The full preserved Chapter 4 import is available at `manifests/chapter-4-full.json`.
 - `exams.js` still sets `./manifests/exam-1.json` as the default manifest, so the base app URL still opens Chapter 1 Version 1 automatically.
+
+## Current Chapter 4 Version 2 exam
+
+The Version 2 Chapter 4 manifest is:
+
+```text
+manifests/chapter-4-v2.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-4-v2.json
+```
+
+Current `chapter-4-v2` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-4-v2.json&admin=c97211e1-6945-4c57-b2c1-a3482748906e
+```
+
+Current `chapter-4-v2` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-4-v2.json&access=2a2b2345-5605-4ac9-a9af-657bd580b72e
+```
+
+Current `chapter-4-v2` released auto-start link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-4-v2.json&access=2a2b2345-5605-4ac9-a9af-657bd580b72e&start=true
+```
+
+Notes:
+- The exam contains 43 questions selected by interval: 2, 5, 8, through 128.
+- The timed duration is set to 64.5 minutes, which is 1 minute 30 seconds per question.
+- The imported media for these questions lives in `assets/chapter-4/`.
+- The full preserved Chapter 4 import is available at `manifests/chapter-4-full.json`.
