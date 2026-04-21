@@ -27,12 +27,16 @@ practice_test_web_app_v2/
   manifests/
     exam-1.json
     exam-2.json
+    chapter-2-v1.json
     chapter-4-v1.json
     chapter-4-v2.json
   assets/
     exam-1/
       q001-front.png
       q001-answer.png
+    chapter-2/
+      front_text__page_001_q001_a.png
+      back_ans__page_001_q001_b.png
     chapter-4/
       front_text__page_001_q001_a.png
       back_ans__page_001_q001_a.png
@@ -192,6 +196,8 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - `manifests/exam-1.json` now contains the 50-question Chapter 1 Version 1 subset.
 - `manifests/exam-2.json` contains a separate 50-question Chapter 1 Version 2 subset shifted one source question forward from Version 1.
 - `manifests/chapter-1-full.json` preserves the full 425-question import.
+- `manifests/chapter-2-v1.json` contains the 48-question Chapter 2 Version 1 subset.
+- `manifests/chapter-2-full.json` preserves the full 144-question Chapter 2 import.
 - `manifests/chapter-4-v1.json` contains the 43-question Chapter 4 Version 1 subset.
 - `manifests/chapter-4-v2.json` contains the 43-question Chapter 4 Version 2 subset.
 - `manifests/chapter-4-full.json` preserves the full 130-question Chapter 4 import.
@@ -360,3 +366,41 @@ Notes:
 - The timed duration is set to 64.5 minutes, which is 1 minute 30 seconds per question.
 - The imported media for these questions lives in `assets/chapter-4/`.
 - The full preserved Chapter 4 import is available at `manifests/chapter-4-full.json`.
+
+## Current Chapter 2 Version 1 exam
+
+The Version 1 Chapter 2 manifest is:
+
+```text
+manifests/chapter-2-v1.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-2-v1.json
+```
+
+Current `chapter-2-v1` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-2-v1.json&admin=806bcb96-1175-4338-94a2-9bc0a47560a1
+```
+
+Current `chapter-2-v1` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-2-v1.json&access=c802bdd4-d9a6-450b-bd5c-f63b17bdf82e
+```
+
+Current `chapter-2-v1` released auto-start link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-2-v1.json&access=c802bdd4-d9a6-450b-bd5c-f63b17bdf82e&start=true
+```
+
+Notes:
+- The exam contains 48 questions selected by interval: 1, 4, 7, through 142.
+- The timed duration is set to 72 minutes, which is 1 minute 30 seconds per question.
+- The imported media for these questions lives in `assets/chapter-2/`.
+- The full preserved Chapter 2 import is available at `manifests/chapter-2-full.json`.

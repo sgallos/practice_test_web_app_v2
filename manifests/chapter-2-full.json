@@ -1,0 +1,1024 @@
+{
+  "id": "chapter-2-full",
+  "title": "Chapter 2 Full Question Bank",
+  "description": "Full Chapter 2 image-based question bank imported from the Anki deck media export.",
+  "version": "full-import",
+  "durationMinutes": 216,
+  "adminResetToken": "806bcb96-1175-4338-94a2-9bc0a47560a1",
+  "startAccessToken": "c802bdd4-d9a6-450b-bd5c-f63b17bdf82e",
+  "warningThresholdsSeconds": [
+    1800,
+    600,
+    300
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q001_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q001_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 2,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q002_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q002_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 3,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q003_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q003_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 4,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q004_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q004_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 5,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q005_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q005_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 6,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q006_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q006_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 7,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q007_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q007_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 8,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q008_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q008_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 9,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q009_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q009_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 10,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q010_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q010_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 11,
+      "promptImage": "../assets/chapter-2/front_text__page_001_q011_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q011_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 12,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q012_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q012_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 13,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q013_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_001_q013_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 14,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q014_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q014_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 15,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q015_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q015_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 16,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q016_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q016_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 17,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q017_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q017_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 18,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q018_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q018_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 19,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q019_c.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q019_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 20,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q020_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q020_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 21,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q021_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q021_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 22,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q022_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q022_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 23,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q023_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q023_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 24,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q024_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q024_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 25,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q025_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q025_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 26,
+      "promptImage": "../assets/chapter-2/front_text__page_002_q026_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q026_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 27,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_003_block_00_q_27.png",
+      "figureImage": "../assets/chapter-2/front_img__p003_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q027_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 28,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_003_block_01_q_28.png",
+      "figureImage": "../assets/chapter-2/front_img__p003_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q028_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 29,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_003_block_02_q_29.png",
+      "figureImage": "../assets/chapter-2/front_img__p003_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q029_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 30,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_004_block_00_q_30.png",
+      "figureImage": "../assets/chapter-2/front_img__p004_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q030_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 31,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_004_block_01_q_31.png",
+      "figureImage": "../assets/chapter-2/front_img__p004_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q031_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 32,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_004_block_02_q_32.png",
+      "figureImage": "../assets/chapter-2/front_img__p004_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q032_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 33,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_005_block_00_q_33.png",
+      "figureImage": "../assets/chapter-2/front_img__p005_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q033_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 34,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_005_block_01_q_34.png",
+      "figureImage": "../assets/chapter-2/front_img__p005_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q034_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 35,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_005_block_02_q_35.png",
+      "figureImage": "../assets/chapter-2/front_img__p005_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q035_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 36,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_006_block_00_q_36.png",
+      "figureImage": "../assets/chapter-2/front_img__p006_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q036_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 37,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_006_block_01_q_37.png",
+      "figureImage": "../assets/chapter-2/front_img__p006_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q037_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 38,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_006_block_02_q_38.png",
+      "figureImage": "../assets/chapter-2/front_img__p006_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q038_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 39,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_007_block_00_q_39.png",
+      "figureImage": "../assets/chapter-2/front_img__p007_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q039_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 40,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_007_block_01_q_40.png",
+      "figureImage": "../assets/chapter-2/front_img__p007_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q040_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 41,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_007_block_02_q_41.png",
+      "figureImage": "../assets/chapter-2/front_img__p007_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q041_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 42,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_008_block_00_q_42.png",
+      "figureImage": "../assets/chapter-2/front_img__p008_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q042_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 43,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_008_block_01_q_43.png",
+      "figureImage": "../assets/chapter-2/front_img__p008_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q043_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 44,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_008_block_02_q_44.png",
+      "figureImage": "../assets/chapter-2/front_img__p008_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q044_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 45,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q045_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q045_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 46,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q046_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q046_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 47,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q047_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_004_q047_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 48,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q048_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q048_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 49,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q049_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q049_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 50,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q050_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q050_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 51,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q051_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q051_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 52,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q052_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q052_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 53,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q053_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q053_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 54,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q054_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q054_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 55,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q055_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q055_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 56,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q056_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q056_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 57,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q057_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q057_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 58,
+      "promptImage": "../assets/chapter-2/front_text__page_009_q058_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q058_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 59,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q059_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_005_q059_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 60,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q060_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q060_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 61,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q061_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q061_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 62,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q062_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q062_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 63,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q063_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q063_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 64,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q064_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q064_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 65,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q065_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q065_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 66,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q066_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q066_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 67,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q067_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q067_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 68,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q068_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_006_q068_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 69,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q069_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q069_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 70,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q070_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q070_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 71,
+      "promptImage": "../assets/chapter-2/front_text__page_010_q071_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q071_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 72,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_011_block_00_q_72.png",
+      "figureImage": "../assets/chapter-2/front_img__p011_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q072_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 73,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_011_block_01_q_73.png",
+      "figureImage": "../assets/chapter-2/front_img__p011_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q073_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 74,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_011_block_02_q_74.png",
+      "figureImage": "../assets/chapter-2/front_img__p011_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q074_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 75,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_012_block_00_q_75.png",
+      "figureImage": "../assets/chapter-2/front_img__p012_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q075_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 76,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_012_block_01_q_76.png",
+      "figureImage": "../assets/chapter-2/front_img__p012_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q076_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 77,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_012_block_02_q_77.png",
+      "figureImage": "../assets/chapter-2/front_img__p012_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q077_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 78,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_013_block_00_q_78.png",
+      "figureImage": "../assets/chapter-2/front_img__p013_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q078_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 79,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_013_block_01_q_79.png",
+      "figureImage": "../assets/chapter-2/front_img__p013_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_007_q079_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 80,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_013_block_02_q_80.png",
+      "figureImage": "../assets/chapter-2/front_img__p013_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q080_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 81,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_014_block_00_q_81.png",
+      "figureImage": "../assets/chapter-2/front_img__p014_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q081_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 82,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_014_block_01_q_82.png",
+      "figureImage": "../assets/chapter-2/front_img__p014_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q082_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 83,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_014_block_02_q_83.png",
+      "figureImage": "../assets/chapter-2/front_img__p014_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q083_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 84,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q084_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q084_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 85,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q085_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q085_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 86,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q086_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q086_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 87,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q087_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q087_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 88,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q088_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q088_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 89,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q089_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q089_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 90,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q090_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q090_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 91,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q091_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_008_q091_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 92,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q092_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q092_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 93,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q093_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q093_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 94,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q094_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q094_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 95,
+      "promptImage": "../assets/chapter-2/front_text__page_015_q095_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q095_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 96,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q096_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q096_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 97,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q097_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q097_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 98,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q098_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q098_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 99,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q099_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q099_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 100,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q100_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q100_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 101,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q101_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q101_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 102,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q102_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_009_q102_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 103,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q103_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q103_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 104,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q104_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q104_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 105,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q105_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q105_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 106,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q106_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q106_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 107,
+      "promptImage": "../assets/chapter-2/front_text__page_016_q107_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q107_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 108,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_017_block_00_q_108.png",
+      "figureImage": "../assets/chapter-2/front_img__p017_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q108_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 109,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_017_block_01_q_109.png",
+      "figureImage": "../assets/chapter-2/front_img__p017_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q109_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 110,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_017_block_02_q_110.png",
+      "figureImage": "../assets/chapter-2/front_img__p017_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q110_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 111,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_018_block_00_q_111.png",
+      "figureImage": "../assets/chapter-2/front_img__p018_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_010_q111_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 112,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_018_block_01_q_112.png",
+      "figureImage": "../assets/chapter-2/front_img__p018_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q112_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 113,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_018_block_02_q_113.png",
+      "figureImage": "../assets/chapter-2/front_img__p018_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q113_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 114,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_019_block_00_q_114.png",
+      "figureImage": "../assets/chapter-2/front_img__p019_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q114_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 115,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_019_block_01_q_115.png",
+      "figureImage": "../assets/chapter-2/front_img__p019_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q115_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 116,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_019_block_02_q_116.png",
+      "figureImage": "../assets/chapter-2/front_img__p019_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q116_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 117,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_020_block_00_q_117.png",
+      "figureImage": "../assets/chapter-2/front_img__p020_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q117_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 118,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_020_block_01_q_118.png",
+      "figureImage": "../assets/chapter-2/front_img__p020_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q118_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 119,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_020_block_02_q_119.png",
+      "figureImage": "../assets/chapter-2/front_img__p020_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q119_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 120,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_021_block_00_q_120.png",
+      "figureImage": "../assets/chapter-2/front_img__p021_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q120_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 121,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_021_block_01_q_121.png",
+      "figureImage": "../assets/chapter-2/front_img__p021_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_011_q121_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 122,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_021_block_02_q_122.png",
+      "figureImage": "../assets/chapter-2/front_img__p021_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q122_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 123,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_022_block_00_q_123.png",
+      "figureImage": "../assets/chapter-2/front_img__p022_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q123_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 124,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_022_block_01_q_124.png",
+      "figureImage": "../assets/chapter-2/front_img__p022_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q124_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 125,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_022_block_02_q_125.png",
+      "figureImage": "../assets/chapter-2/front_img__p022_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q125_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 126,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_023_block_00_q_126.png",
+      "figureImage": "../assets/chapter-2/front_img__p023_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q126_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 127,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_023_block_01_q_127.png",
+      "figureImage": "../assets/chapter-2/front_img__p023_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q127_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 128,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_023_block_02_q_128.png",
+      "figureImage": "../assets/chapter-2/front_img__p023_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q128_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 129,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_024_block_00_q_129.png",
+      "figureImage": "../assets/chapter-2/front_img__p024_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q129_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 130,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_024_block_01_q_130.png",
+      "figureImage": "../assets/chapter-2/front_img__p024_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q130_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 131,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_024_block_02_q_131.png",
+      "figureImage": "../assets/chapter-2/front_img__p024_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q131_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 132,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_025_block_00_q_132.png",
+      "figureImage": "../assets/chapter-2/front_img__p025_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q132_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 133,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_025_block_01_q_133.png",
+      "figureImage": "../assets/chapter-2/front_img__p025_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q133_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 134,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_025_block_02_q_134.png",
+      "figureImage": "../assets/chapter-2/front_img__p025_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q134_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 135,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_026_block_00_q_135.png",
+      "figureImage": "../assets/chapter-2/front_img__p026_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q135_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 136,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_026_block_01_q_136.png",
+      "figureImage": "../assets/chapter-2/front_img__p026_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q136_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 137,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_026_block_02_q_137.png",
+      "figureImage": "../assets/chapter-2/front_img__p026_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q137_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 138,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_027_block_00_q_138.png",
+      "figureImage": "../assets/chapter-2/front_img__p027_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q138_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 139,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_027_block_01_q_139.png",
+      "figureImage": "../assets/chapter-2/front_img__p027_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q139_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 140,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_027_block_02_q_140.png",
+      "figureImage": "../assets/chapter-2/front_img__p027_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q140_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 141,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_028_block_00_q_141.png",
+      "figureImage": "../assets/chapter-2/front_img__p028_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q141_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 142,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_028_block_01_q_142.png",
+      "figureImage": "../assets/chapter-2/front_img__p028_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q142_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 143,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_029_block_00_q_143.png",
+      "figureImage": "../assets/chapter-2/front_img__p029_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q143_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 144,
+      "promptImage": "../assets/chapter-2/front_imgtext__page_029_block_01_q_144.png",
+      "figureImage": "../assets/chapter-2/front_img__p029_block_01.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_013_q144_c.png",
+      "correct": "c"
+    }
+  ]
+}
