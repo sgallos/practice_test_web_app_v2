@@ -201,6 +201,9 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - `manifests/chapter-4-v1.json` contains the 43-question Chapter 4 Version 1 subset.
 - `manifests/chapter-4-v2.json` contains the 43-question Chapter 4 Version 2 subset.
 - `manifests/chapter-4-full.json` preserves the full 130-question Chapter 4 import.
+- `manifests/chapter-6-v1.json` contains the 46-question Chapter 6 Version 1 half-bank subset.
+- `manifests/chapter-6-v2.json` contains the 46-question Chapter 6 Version 2 half-bank subset.
+- `manifests/chapter-6-full.json` preserves the full 92-question Chapter 6 import.
 
 ## Netlify deployment
 
@@ -404,3 +407,79 @@ Notes:
 - The timed duration is set to 72 minutes, which is 1 minute 30 seconds per question.
 - The imported media for these questions lives in `assets/chapter-2/`.
 - The full preserved Chapter 2 import is available at `manifests/chapter-2-full.json`.
+
+## Current Chapter 6 Version 1 exam
+
+The Version 1 Chapter 6 manifest is:
+
+```text
+manifests/chapter-6-v1.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v1.json
+```
+
+Current `chapter-6-v1` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v1.json&admin=3ebece13-a83c-4a5b-9125-3a3c1e93554d
+```
+
+Current `chapter-6-v1` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v1.json&access=d89ca91a-34c2-4b48-9322-ec9a4238757a
+```
+
+Current `chapter-6-v1` released auto-start link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v1.json&access=d89ca91a-34c2-4b48-9322-ec9a4238757a&start=true
+```
+
+Notes:
+- The exam contains 46 questions selected by every other source question: 1, 3, 5, through 91.
+- The timed duration is set to 69 minutes, which is 1 minute 30 seconds per question.
+- The imported media for these questions lives in `assets/chapter-6/`.
+- The full preserved Chapter 6 import is available at `manifests/chapter-6-full.json`.
+
+## Current Chapter 6 Version 2 exam
+
+The Version 2 Chapter 6 manifest is:
+
+```text
+manifests/chapter-6-v2.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v2.json
+```
+
+Current `chapter-6-v2` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v2.json&admin=97c8805d-d83b-4266-88ce-3be48d1f011b
+```
+
+Current `chapter-6-v2` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v2.json&access=e84a2eff-b102-4128-bc0c-61a0abf8c53a
+```
+
+Current `chapter-6-v2` released auto-start link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/chapter-6-v2.json&access=e84a2eff-b102-4128-bc0c-61a0abf8c53a&start=true
+```
+
+Notes:
+- The exam contains 46 questions selected by every other source question: 2, 4, 6, through 92.
+- The timed duration is set to 69 minutes, which is 1 minute 30 seconds per question.
+- The imported media for these questions lives in `assets/chapter-6/`.
+- The full preserved Chapter 6 import is available at `manifests/chapter-6-full.json`.
