@@ -195,6 +195,7 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - A production template is available at `manifests/exam-template.json`.
 - `manifests/exam-1.json` now contains the 50-question Chapter 1 Version 1 subset.
 - `manifests/exam-2.json` contains a separate 50-question Chapter 1 Version 2 subset shifted one source question forward from Version 1.
+- `manifests/exam-3.json` contains a separate 50-question Chapter 1 Version 3 subset shifted two source questions forward from Version 1.
 - `manifests/chapter-1-full.json` preserves the full 425-question import.
 - `manifests/chapter-2-v1.json` contains the 48-question Chapter 2 Version 1 subset.
 - `manifests/chapter-2-full.json` preserves the full 144-question Chapter 2 import.
@@ -289,6 +290,44 @@ http://localhost:8000/index.html?manifest=./manifests/exam-2.json&access=34133e6
 
 Notes:
 - The exam contains 50 questions in the same order pattern as Version 1, with each source question id shifted forward by 1.
+- The timed duration is set to 75 minutes.
+- The imported media for these questions also lives in `assets/exam-1/`.
+- `exams.js` still sets `./manifests/exam-1.json` as the default manifest, so the base app URL still opens Chapter 1 Version 1 automatically.
+
+## Current Chapter 1 Version 3 exam
+
+The Version 3 manifest is:
+
+```text
+manifests/exam-3.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-3.json
+```
+
+Current `exam-3` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-3.json&admin=e7819376-4ce2-4299-ab30-cc2d1a2fa712
+```
+
+Current `exam-3` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-3.json&access=6f0b2ab7-8317-4277-b5b5-c1ddf1a3ef45
+```
+
+Current `exam-3` released auto-start link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/exam-3.json&access=6f0b2ab7-8317-4277-b5b5-c1ddf1a3ef45&start=true
+```
+
+Notes:
+- The exam contains 50 questions in the same order pattern as Version 1, with each source question id shifted forward by 2.
 - The timed duration is set to 75 minutes.
 - The imported media for these questions also lives in `assets/exam-1/`.
 - `exams.js` still sets `./manifests/exam-1.json` as the default manifest, so the base app URL still opens Chapter 1 Version 1 automatically.
