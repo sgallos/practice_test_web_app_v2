@@ -205,6 +205,7 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - `manifests/chapter-6-v1.json` contains the 46-question Chapter 6 Version 1 half-bank subset.
 - `manifests/chapter-6-v2.json` contains the 46-question Chapter 6 Version 2 half-bank subset.
 - `manifests/chapter-6-full.json` preserves the full 92-question Chapter 6 import.
+- `manifests/combined-v1.json` contains the 72-question mixed exam with a 42-minute written section for FNA and Lab Operations.
 
 ## Netlify deployment
 
@@ -522,3 +523,35 @@ Notes:
 - The timed duration is set to 69 minutes, which is 1 minute 30 seconds per question.
 - The imported media for these questions lives in `assets/chapter-6/`.
 - The full preserved Chapter 6 import is available at `manifests/chapter-6-full.json`.
+
+## Current Mixed Exam Version 1
+
+The mixed exam manifest is:
+
+```text
+manifests/combined-v1.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/combined-v1.json
+```
+
+Current `combined-v1` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/combined-v1.json&admin=081ae70b-0e60-4076-a341-0376ec484108
+```
+
+Current `combined-v1` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/combined-v1.json&access=f9989e34-dd12-4d3c-8dc2-c8cd44768f42
+```
+
+Notes:
+- The online section contains 72 questions: 42 GYN, 10 Respiratory, 10 Urinary, and 10 Fluids.
+- The online image-question timer is 108 minutes.
+- After the image questions, the app switches into a 42-minute written section labeled `FNA and Lab Operations`.
+- The total timed sitting is 150 minutes.

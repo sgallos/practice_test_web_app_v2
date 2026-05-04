@@ -119,9 +119,13 @@ function normalizeQuestion(question, index, assetBaseUrl) {
   const source = question && typeof question === "object" ? question : {};
   const questionId = source.id != null ? String(source.id) : String(index + 1);
   const correct = String(source.correct || "").toLowerCase();
+  const displayId = source.displayId != null ? String(source.displayId) : "";
+  const sourceReference = source.sourceReference ? String(source.sourceReference) : "";
 
   return {
     id: questionId,
+    displayId,
+    sourceReference,
     promptImage: resolveAssetUrl(source.promptImage || source.questionImage || source.frontImage || null, assetBaseUrl),
     figureImage: resolveAssetUrl(source.figureImage || source.supportingImage || source.image || null, assetBaseUrl),
     answerKeyImage: resolveAssetUrl(source.answerKeyImage || source.explanationImage || source.backImage || null, assetBaseUrl),
@@ -173,6 +177,8 @@ function normalizeExamManifest(manifest, sourceLabel, assetBaseUrl) {
     description: manifest.description || "Timed image-based practice test.",
     version: manifest.version ? String(manifest.version) : "1",
     durationMinutes,
+    writtenSectionMinutes: Number(manifest.writtenSectionMinutes) > 0 ? Number(manifest.writtenSectionMinutes) : 0,
+    writtenSectionLabel: manifest.writtenSectionLabel ? String(manifest.writtenSectionLabel) : "Written section",
     adminResetToken: manifest.adminResetToken ? String(manifest.adminResetToken) : "",
     startAccessToken: manifest.startAccessToken ? String(manifest.startAccessToken) : "",
     warningThresholds,
@@ -233,6 +239,8 @@ function createEmptySession(exam, autoStart) {
     answers: {},
     flagged: {},
     remainingSeconds: exam.durationMinutes * 60,
+    writtenSectionActive: false,
+    writtenSectionRemainingSeconds: exam.writtenSectionMinutes * 60,
     started: !!autoStart,
     submitted: false,
     reviewOpen: false,
@@ -276,15 +284,21 @@ function sanitizeSession(rawSession, exam, autoStart) {
   const remainingSeconds = Number.isFinite(rawSession.remainingSeconds)
     ? Math.min(Math.max(Number(rawSession.remainingSeconds), 0), exam.durationMinutes * 60)
     : fallback.remainingSeconds;
+  const writtenSectionRemainingSeconds = Number.isFinite(rawSession.writtenSectionRemainingSeconds)
+    ? Math.min(Math.max(Number(rawSession.writtenSectionRemainingSeconds), 0), exam.writtenSectionMinutes * 60)
+    : fallback.writtenSectionRemainingSeconds;
+  const writtenSectionActive = exam.writtenSectionMinutes > 0 ? !!rawSession.writtenSectionActive && !rawSession.submitted : false;
 
   return {
     currentIndex,
     answers,
     flagged,
     remainingSeconds,
+    writtenSectionActive,
+    writtenSectionRemainingSeconds,
     started: rawSession.submitted ? true : !!rawSession.started || !!autoStart,
     submitted: !!rawSession.submitted,
-    reviewOpen: rawSession.submitted ? false : !!rawSession.reviewOpen,
+    reviewOpen: rawSession.submitted || writtenSectionActive ? false : !!rawSession.reviewOpen,
     dismissedWarnings: Array.isArray(rawSession.dismissedWarnings)
       ? rawSession.dismissedWarnings.filter((value) => exam.warningThresholds.includes(value))
       : [],
@@ -307,6 +321,10 @@ function saveSession(storageKey, session) {
   } catch {
     // Ignore storage failures so the exam can still run.
   }
+}
+
+function getQuestionDisplayId(question) {
+  return question.displayId || question.id;
 }
 
 function StatusPill({ label, value }) {
@@ -368,7 +386,7 @@ function buildReportRows(questions, session) {
     const correctAnswer = question.correct || "";
     return {
       sequence: index + 1,
-      id: question.id,
+      id: question.sourceReference || getQuestionDisplayId(question),
       selectedAnswer,
       correctAnswer,
       flagged: !!session.flagged[question.id],
@@ -641,6 +659,12 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     () => buildAuthorizedStartUrl(launchUrl, exam.startAccessToken, true),
     [launchUrl, exam.startAccessToken]
   );
+  const hasWrittenSection = exam.writtenSectionMinutes > 0;
+  const totalExamMinutes = exam.durationMinutes + exam.writtenSectionMinutes;
+  const currentPhaseRemainingSeconds = session.writtenSectionActive
+    ? session.writtenSectionRemainingSeconds
+    : session.remainingSeconds;
+  const currentPhaseLabel = session.writtenSectionActive ? exam.writtenSectionLabel : "Image questions";
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -665,21 +689,47 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   useEffect(() => {
     if (!startAuthorized && session.started && !session.submitted) {
-      setSession((previous) => ({ ...previous, started: false, reviewOpen: false }));
+      setSession((previous) => ({ ...previous, started: false, reviewOpen: false, writtenSectionActive: false }));
       return undefined;
     }
   }, [startAuthorized, session.started, session.submitted]);
 
   useEffect(() => {
     if (!startAuthorized || !session.started || session.submitted) return undefined;
-    if (session.remainingSeconds <= 0) {
-      setSession((previous) => ({
-        ...previous,
-        submitted: true,
-        reviewOpen: false,
-        currentIndex: 0,
-        postExamFilter: previous.postExamFilter || "all",
-      }));
+    if (currentPhaseRemainingSeconds <= 0) {
+      setSession((previous) => {
+        if (previous.submitted) return previous;
+        if (previous.writtenSectionActive) {
+          return {
+            ...previous,
+            submitted: true,
+            writtenSectionActive: false,
+            writtenSectionRemainingSeconds: 0,
+            reviewOpen: false,
+            currentIndex: 0,
+            postExamFilter: previous.postExamFilter || "all",
+          };
+        }
+
+        if (hasWrittenSection) {
+          return {
+            ...previous,
+            remainingSeconds: 0,
+            writtenSectionActive: true,
+            writtenSectionRemainingSeconds: exam.writtenSectionMinutes * 60,
+            reviewOpen: false,
+            currentIndex: 0,
+          };
+        }
+
+        return {
+          ...previous,
+          submitted: true,
+          reviewOpen: false,
+          currentIndex: 0,
+          postExamFilter: previous.postExamFilter || "all",
+        };
+      });
       return undefined;
     }
 
@@ -689,7 +739,30 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
           return previous;
         }
 
+        if (previous.writtenSectionActive) {
+          const nextWrittenRemaining = Math.max(previous.writtenSectionRemainingSeconds - 1, 0);
+          return {
+            ...previous,
+            writtenSectionRemainingSeconds: nextWrittenRemaining,
+            submitted: nextWrittenRemaining === 0 ? true : previous.submitted,
+            writtenSectionActive: nextWrittenRemaining === 0 ? false : previous.writtenSectionActive,
+            reviewOpen: false,
+            currentIndex: nextWrittenRemaining === 0 ? 0 : previous.currentIndex,
+          };
+        }
+
         const nextRemaining = Math.max(previous.remainingSeconds - 1, 0);
+        if (nextRemaining === 0 && hasWrittenSection) {
+          return {
+            ...previous,
+            remainingSeconds: 0,
+            writtenSectionActive: true,
+            writtenSectionRemainingSeconds: exam.writtenSectionMinutes * 60,
+            reviewOpen: false,
+            currentIndex: 0,
+          };
+        }
+
         return {
           ...previous,
           remainingSeconds: nextRemaining,
@@ -701,10 +774,17 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [startAuthorized, session.started, session.submitted, session.remainingSeconds]);
+  }, [
+    currentPhaseRemainingSeconds,
+    exam.writtenSectionMinutes,
+    hasWrittenSection,
+    session.started,
+    session.submitted,
+    startAuthorized,
+  ]);
 
   useEffect(() => {
-    if (session.submitted) return;
+    if (session.submitted || session.writtenSectionActive) return;
     const threshold = exam.warningThresholds.find(
       (value) => session.remainingSeconds === value && !session.dismissedWarnings.includes(value)
     );
@@ -736,7 +816,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   function selectOption(questionId, optionId) {
-    if (session.submitted || !startAuthorized) return;
+    if (session.submitted || session.writtenSectionActive || !startAuthorized) return;
     updateSession((previous) => ({
       ...previous,
       started: true,
@@ -745,7 +825,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   function toggleFlag(questionId) {
-    if (!startAuthorized && !adminMode) return;
+    if ((!startAuthorized && !adminMode) || session.writtenSectionActive) return;
     updateSession((previous) => ({
       ...previous,
       started: true,
@@ -754,7 +834,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   function goToQuestion(index) {
-    if (!startAuthorized && !adminMode) return;
+    if ((!startAuthorized && !adminMode) || session.writtenSectionActive) return;
     updateSession((previous) => ({
       ...previous,
       currentIndex: Math.max(0, Math.min(index, questions.length - 1)),
@@ -772,7 +852,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   function openReview() {
-    if (!startAuthorized) return;
+    if (!startAuthorized || session.writtenSectionActive) return;
     updateSession((previous) => ({ ...previous, started: true, reviewOpen: true }));
   }
 
@@ -781,6 +861,19 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   function submitExam() {
+    if (hasWrittenSection) {
+      updateSession((previous) => ({
+        ...previous,
+        submitted: false,
+        started: true,
+        reviewOpen: false,
+        writtenSectionActive: true,
+        writtenSectionRemainingSeconds: exam.writtenSectionMinutes * 60,
+        currentIndex: 0,
+      }));
+      return;
+    }
+
     updateSession((previous) => ({
       ...previous,
       submitted: true,
@@ -818,7 +911,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
       score,
       answeredCount,
       flaggedCount,
-      remainingSeconds: session.remainingSeconds,
+      remainingSeconds: 0,
     });
 
     reportWindow.document.open();
@@ -924,11 +1017,11 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, sourceLabel),
             React.createElement("h1", { className: "mt-2 text-3xl font-bold tracking-tight text-slate-950" }, exam.title),
             React.createElement("p", { className: "mt-2 text-sm leading-6 text-slate-600" }, exam.description),
-            React.createElement(
-              "div",
-              { className: "mt-4 flex flex-wrap gap-2 text-xs text-slate-500" },
-              React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `${questions.length} questions`),
-              React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `${exam.durationMinutes} minutes`),
+              React.createElement(
+                "div",
+                { className: "mt-4 flex flex-wrap gap-2 text-xs text-slate-500" },
+                React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `${questions.length} questions`),
+              React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `${totalExamMinutes} minutes total`),
               React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `v${exam.version}`),
               manifestUrl && React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, "Custom manifest"),
               urlHasAutoStart() && React.createElement("span", { className: "rounded-full bg-blue-100 px-3 py-1 text-blue-900" }, "Auto-start link"),
@@ -1040,7 +1133,8 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             React.createElement(
               "div",
               { className: "flex flex-wrap gap-3" },
-              React.createElement(StatusPill, { label: "Time", value: formatTime(session.remainingSeconds) }),
+              React.createElement(StatusPill, { label: "Phase", value: currentPhaseLabel }),
+              React.createElement(StatusPill, { label: "Time", value: formatTime(currentPhaseRemainingSeconds) }),
               React.createElement(StatusPill, { label: "Answered", value: `${answeredCount}/${questions.length}` }),
               React.createElement(StatusPill, { label: "Flagged", value: String(flaggedCount) })
             )
@@ -1120,7 +1214,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 React.createElement(
                   "div",
                   { className: "rounded-3xl border border-slate-200 bg-slate-50 p-5" },
-                  React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, formatDurationMinutes(exam.durationMinutes)),
+                  React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, formatDurationMinutes(totalExamMinutes)),
                   React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Total time")
                 ),
                 React.createElement(
@@ -1168,13 +1262,25 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 React.createElement(
                   "li",
                   null,
-                  `You will have ${formatDurationMinutes(exam.durationMinutes)} to complete ${questions.length} questions once the exam begins.`
+                  hasWrittenSection
+                    ? `You will have ${formatDurationMinutes(exam.durationMinutes)} for ${questions.length} online questions, followed by ${formatDurationMinutes(
+                        exam.writtenSectionMinutes
+                      )} for ${exam.writtenSectionLabel}.`
+                    : `You will have ${formatDurationMinutes(exam.durationMinutes)} to complete ${questions.length} questions once the exam begins.`
                 ),
                 React.createElement("li", null, "Answer each question by selecting A, B, C, or D."),
                 React.createElement("li", null, "Use the flag button to mark questions you want to revisit before submitting."),
                 React.createElement("li", null, "You will receive time warnings when 30 minutes, 10 minutes, and 5 minutes remain."),
                 React.createElement("li", null, "The final review screen becomes available when you reach the last question."),
-                React.createElement("li", null, "After submission, you can review the answer key images for each question.")
+                React.createElement(
+                  "li",
+                  null,
+                  hasWrittenSection
+                    ? `After the online questions, the app will switch to a ${formatDurationMinutes(
+                        exam.writtenSectionMinutes
+                      )} written section labeled ${exam.writtenSectionLabel}.`
+                    : "After submission, you can review the answer key images for each question."
+                )
               )
             )
           )
@@ -1207,7 +1313,9 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                     onClick: () => goToQuestion(index),
                     className: `rounded-3xl border p-4 text-left transition ${reviewClass(question, index === session.currentIndex)}`,
                   },
-                  React.createElement("div", { className: "text-sm font-semibold" }, `Question ${question.id}`),
+                  React.createElement("div", { className: "text-sm font-semibold" }, `Question ${getQuestionDisplayId(question)}`),
+                  question.sourceReference &&
+                    React.createElement("div", { className: "mt-1 text-[11px] uppercase tracking-[0.12em]" }, question.sourceReference),
                   React.createElement(
                     "div",
                     { className: "mt-2 text-xs" },
@@ -1236,7 +1344,35 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   onClick: submitExam,
                   className: "rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500",
                 },
-                "Submit Exam"
+                hasWrittenSection ? "Begin Written Section" : "Submit Exam"
+              )
+            )
+          )
+        : session.writtenSectionActive
+        ? React.createElement(
+            "div",
+            { className: "rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-slate-200" },
+            React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Written section"),
+            React.createElement("h2", { className: "mt-2 text-3xl font-semibold tracking-tight text-slate-950" }, exam.writtenSectionLabel),
+            React.createElement(
+              "p",
+              { className: "mt-3 max-w-2xl text-sm leading-6 text-slate-600" },
+              "Complete this offline portion of the exam while this timer runs. The online image questions are locked, and the answer-key review will open when this written section ends."
+            ),
+            React.createElement(
+              "div",
+              { className: "mt-8 grid gap-4 sm:grid-cols-2" },
+              React.createElement(
+                "div",
+                { className: "rounded-3xl border border-slate-200 bg-slate-50 p-5" },
+                React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, formatTime(session.writtenSectionRemainingSeconds)),
+                React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Written section time remaining")
+              ),
+              React.createElement(
+                "div",
+                { className: "rounded-3xl border border-slate-200 bg-slate-50 p-5" },
+                React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, formatDurationMinutes(exam.writtenSectionMinutes)),
+                React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Written section duration")
               )
             )
           )
@@ -1321,7 +1457,13 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                             correct ? "border-emerald-300 bg-emerald-50" : "border-rose-300 bg-rose-50"
                           }`,
                         },
-                        React.createElement("span", null, `Question ${question.id}${session.flagged[question.id] ? " • flagged" : ""}`),
+                        React.createElement(
+                          "span",
+                          null,
+                          `Question ${getQuestionDisplayId(question)}${question.sourceReference ? ` • ${question.sourceReference}` : ""}${
+                            session.flagged[question.id] ? " • flagged" : ""
+                          }`
+                        ),
                         React.createElement("span", null, correct ? "Correct" : "Incorrect")
                       );
                     })
@@ -1345,7 +1487,9 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                     React.createElement(
                       "div",
                       null,
-                      React.createElement("h2", { className: "text-2xl font-semibold tracking-tight" }, `Question ${currentQuestion.id}`),
+                      React.createElement("h2", { className: "text-2xl font-semibold tracking-tight" }, `Question ${getQuestionDisplayId(currentQuestion)}`),
+                      currentQuestion.sourceReference &&
+                        React.createElement("p", { className: "mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500" }, currentQuestion.sourceReference),
                       React.createElement(
                         "p",
                         { className: "mt-1 text-sm text-slate-600" },
@@ -1424,17 +1568,17 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 "div",
                 { className: "mt-4 grid grid-cols-3 gap-3" },
                 ...questions.map((question, index) =>
-                  React.createElement(
-                    "button",
-                    {
-                      key: question.id,
+                React.createElement(
+                  "button",
+                  {
+                    key: question.id,
                       onClick: () => goToQuestion(index),
                       className: `rounded-2xl border px-3 py-4 text-sm font-medium transition ${reviewClass(
                         question,
                         index === session.currentIndex
                       )}`,
                     },
-                    `Q${question.id}`
+                    `Q${getQuestionDisplayId(question)}`
                   )
                 )
               )
@@ -1452,7 +1596,9 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                     React.createElement(
                       "div",
                       null,
-                      React.createElement("h2", { className: "text-2xl font-semibold tracking-tight" }, `Question ${currentQuestion.id}`),
+                      React.createElement("h2", { className: "text-2xl font-semibold tracking-tight" }, `Question ${getQuestionDisplayId(currentQuestion)}`),
+                      currentQuestion.sourceReference &&
+                        React.createElement("p", { className: "mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500" }, currentQuestion.sourceReference),
                       React.createElement(
                         "p",
                         { className: "mt-1 text-sm text-slate-600" },
