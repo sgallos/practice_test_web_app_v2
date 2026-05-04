@@ -974,6 +974,33 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     setActiveWarning(seconds);
   }
 
+  function triggerWrittenSection() {
+    if (!hasWrittenSection) return;
+    updateSession((previous) => ({
+      ...previous,
+      started: true,
+      submitted: false,
+      reviewOpen: false,
+      writtenSectionActive: true,
+      writtenSectionRemainingSeconds: exam.writtenSectionMinutes * 60,
+      currentIndex: 0,
+    }));
+  }
+
+  function finishWrittenSection() {
+    if (!hasWrittenSection) return;
+    updateSession((previous) => ({
+      ...previous,
+      started: true,
+      submitted: true,
+      reviewOpen: false,
+      writtenSectionActive: false,
+      writtenSectionRemainingSeconds: 0,
+      currentIndex: 0,
+      postExamFilter: previous.postExamFilter || "all",
+    }));
+  }
+
   const resultsList = session.postExamFilter === "flagged" ? flaggedQuestions : questions;
 
   return React.createElement(
@@ -1127,6 +1154,33 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                       className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100",
                     },
                     "Trigger 5 min"
+                  )
+                )
+              ),
+            adminMode &&
+              hasWrittenSection &&
+              React.createElement(
+                "div",
+                { className: "rounded-3xl border border-slate-200 bg-slate-50 p-4" },
+                React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Admin written section"),
+                React.createElement(
+                  "div",
+                  { className: "mt-3 flex flex-wrap gap-3" },
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: triggerWrittenSection,
+                      className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100",
+                    },
+                    "Trigger written section"
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: finishWrittenSection,
+                      className: "rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-100",
+                    },
+                    "Finish written section"
                   )
                 )
               ),
