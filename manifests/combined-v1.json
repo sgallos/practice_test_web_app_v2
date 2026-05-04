@@ -1,7 +1,7 @@
 {
   "id": "combined-v1",
   "title": "ASCP Mixed Practice Exam Version 1",
-  "description": "A 72-question mixed exam with unseen-by-student online questions plus a 42-minute written section for FNA and Lab Operations.",
+  "description": "Complete 72 online questions first, then continue to the 42-minute FNA and Lab Operations written section.",
   "version": "1",
   "durationMinutes": 108,
   "writtenSectionMinutes": 42,
