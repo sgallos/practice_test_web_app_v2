@@ -206,6 +206,7 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - `manifests/chapter-6-v2.json` contains the 46-question Chapter 6 Version 2 half-bank subset.
 - `manifests/chapter-6-full.json` preserves the full 92-question Chapter 6 import.
 - `manifests/combined-v1.json` contains the 72-question mixed exam with a 42-minute written section for FNA and Lab Operations.
+- `manifests/combined-v2.json` contains the second 72-question mixed exam with the same written section and a non-overlapping question set.
 
 ## Netlify deployment
 
@@ -548,6 +549,38 @@ Current `combined-v1` released student link:
 
 ```text
 http://localhost:8000/index.html?manifest=./manifests/combined-v1.json&access=f9989e34-dd12-4d3c-8dc2-c8cd44768f42
+```
+
+Notes:
+- The online section contains 72 questions: 42 GYN, 10 Respiratory, 10 Urinary, and 10 Fluids.
+- The online image-question timer is 108 minutes.
+- After the image questions, the app switches into a 42-minute written section labeled `FNA and Lab Operations`.
+- The total timed sitting is 150 minutes.
+
+## Current Mixed Exam Version 2
+
+The mixed exam manifest is:
+
+```text
+manifests/combined-v2.json
+```
+
+Local student URL:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/combined-v2.json
+```
+
+Current `combined-v2` admin link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/combined-v2.json&admin=0cdf2c6c-148c-4123-8681-6b6cc8e0ef3d
+```
+
+Current `combined-v2` released student link:
+
+```text
+http://localhost:8000/index.html?manifest=./manifests/combined-v2.json&access=9762191b-63d3-4386-b664-fd5cc4f3bcee
 ```
 
 Notes:

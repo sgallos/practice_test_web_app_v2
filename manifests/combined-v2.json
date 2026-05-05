@@ -1,0 +1,666 @@
+{
+  "id": "combined-v2",
+  "title": "ASCP Mixed Practice Exam Version 2",
+  "description": "Complete 72 online questions first, then continue to the 42-minute FNA and Lab Operations written section.",
+  "version": "2",
+  "durationMinutes": 108,
+  "writtenSectionMinutes": 42,
+  "writtenSectionLabel": "FNA and Lab Operations",
+  "adminResetToken": "0cdf2c6c-148c-4123-8681-6b6cc8e0ef3d",
+  "startAccessToken": "9762191b-63d3-4386-b664-fd5cc4f3bcee",
+  "warningThresholdsSeconds": [
+    1800,
+    600,
+    300
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "displayId": 1,
+      "sourceReference": "GYN 49",
+      "promptImage": "../assets/exam-1/q049__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q049__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 2,
+      "displayId": 2,
+      "sourceReference": "GYN 50",
+      "promptImage": "../assets/exam-1/q050__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q050__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 3,
+      "displayId": 3,
+      "sourceReference": "GYN 51",
+      "promptImage": "../assets/exam-1/q051__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q051__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 4,
+      "displayId": 4,
+      "sourceReference": "GYN 52",
+      "promptImage": "../assets/exam-1/q052__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q052__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 5,
+      "displayId": 5,
+      "sourceReference": "Respiratory 33",
+      "promptImage": "../assets/chapter-4/front_imgtext__page_008_block_00_q_33.png",
+      "figureImage": "../assets/chapter-4/front_img__p008_block_00.png",
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_003_q033_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 6,
+      "displayId": 6,
+      "sourceReference": "Urinary 22",
+      "promptImage": "../assets/chapter-6/front_text__page_002_q022_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_002_q022_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 7,
+      "displayId": 7,
+      "sourceReference": "Fluids 17",
+      "promptImage": "../assets/chapter-2/front_text__page_002_q017_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q017_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 8,
+      "displayId": 8,
+      "sourceReference": "GYN 53",
+      "promptImage": "../assets/exam-1/q053__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q053__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 9,
+      "displayId": 9,
+      "sourceReference": "GYN 54",
+      "promptImage": "../assets/exam-1/q054__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q054__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 10,
+      "displayId": 10,
+      "sourceReference": "GYN 55",
+      "promptImage": "../assets/exam-1/q055__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q055__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 11,
+      "displayId": 11,
+      "sourceReference": "GYN 56",
+      "promptImage": "../assets/exam-1/q056__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q056__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 12,
+      "displayId": 12,
+      "sourceReference": "Respiratory 36",
+      "promptImage": "../assets/chapter-4/front_text__page_009_q036_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_004_q036_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 13,
+      "displayId": 13,
+      "sourceReference": "Urinary 24",
+      "promptImage": "../assets/chapter-6/front_text__page_002_q024_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_003_q024_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 14,
+      "displayId": 14,
+      "sourceReference": "Fluids 18",
+      "promptImage": "../assets/chapter-2/front_text__page_002_q018_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q018_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 15,
+      "displayId": 15,
+      "sourceReference": "GYN 57",
+      "promptImage": "../assets/exam-1/q057__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q057__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 16,
+      "displayId": 16,
+      "sourceReference": "GYN 61",
+      "promptImage": "../assets/exam-1/q061__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q061__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 17,
+      "displayId": 17,
+      "sourceReference": "GYN 62",
+      "promptImage": "../assets/exam-1/q062__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q062__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 18,
+      "displayId": 18,
+      "sourceReference": "GYN 66",
+      "promptImage": "../assets/exam-1/q066__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q066__back__answer.png",
+      "correct": "d"
+    },
+    {
+      "id": 19,
+      "displayId": 19,
+      "sourceReference": "Respiratory 39",
+      "promptImage": "../assets/chapter-4/front_text__page_009_q039_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_004_q039_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 20,
+      "displayId": 20,
+      "sourceReference": "Urinary 26",
+      "promptImage": "../assets/chapter-6/front_imgtext__page_003_block_01_q_026.png",
+      "figureImage": "../assets/chapter-6/front_img__p003_block_01.png",
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_003_q026_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 21,
+      "displayId": 21,
+      "sourceReference": "Fluids 20",
+      "promptImage": "../assets/chapter-2/front_text__page_002_q020_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q020_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 22,
+      "displayId": 22,
+      "sourceReference": "GYN 67",
+      "promptImage": "../assets/exam-1/q067__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q067__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 23,
+      "displayId": 23,
+      "sourceReference": "GYN 68",
+      "promptImage": "../assets/exam-1/q068__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q068__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 24,
+      "displayId": 24,
+      "sourceReference": "GYN 69",
+      "promptImage": "../assets/exam-1/q069__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q069__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 25,
+      "displayId": 25,
+      "sourceReference": "GYN 70",
+      "promptImage": "../assets/exam-1/q070__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q070__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 26,
+      "displayId": 26,
+      "sourceReference": "Respiratory 42",
+      "promptImage": "../assets/chapter-4/front_text__page_009_q042_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_004_q042_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 27,
+      "displayId": 27,
+      "sourceReference": "Urinary 28",
+      "promptImage": "../assets/chapter-6/front_imgtext__page_004_block_00_q_028.png",
+      "figureImage": "../assets/chapter-6/front_img__p004_block_00.png",
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_003_q028_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 28,
+      "displayId": 28,
+      "sourceReference": "Fluids 21",
+      "promptImage": "../assets/chapter-2/front_text__page_002_q021_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q021_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 29,
+      "displayId": 29,
+      "sourceReference": "GYN 71",
+      "promptImage": "../assets/exam-1/q071__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q071__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 30,
+      "displayId": 30,
+      "sourceReference": "GYN 72",
+      "promptImage": "../assets/exam-1/q072__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q072__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 31,
+      "displayId": 31,
+      "sourceReference": "GYN 73",
+      "promptImage": "../assets/exam-1/q073__front__text.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/exam-1/q073__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 32,
+      "displayId": 32,
+      "sourceReference": "GYN 77",
+      "promptImage": "../assets/exam-1/q077__front__qblock.png",
+      "figureImage": "../assets/exam-1/q077__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q077__back__answer.png",
+      "correct": "d"
+    },
+    {
+      "id": 33,
+      "displayId": 33,
+      "sourceReference": "Respiratory 45",
+      "promptImage": "../assets/chapter-4/front_text__page_009_q045_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_004_q045_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 34,
+      "displayId": 34,
+      "sourceReference": "Urinary 30",
+      "promptImage": "../assets/chapter-6/front_imgtext__page_004_block_02_q_030.png",
+      "figureImage": "../assets/chapter-6/front_img__p004_block_02.png",
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_003_q030_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 35,
+      "displayId": 35,
+      "sourceReference": "Fluids 23",
+      "promptImage": "../assets/chapter-2/front_text__page_002_q023_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q023_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 36,
+      "displayId": 36,
+      "sourceReference": "GYN 78",
+      "promptImage": "../assets/exam-1/q078__front__qblock.png",
+      "figureImage": "../assets/exam-1/q078__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q078__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 37,
+      "displayId": 37,
+      "sourceReference": "GYN 79",
+      "promptImage": "../assets/exam-1/q079__front__qblock.png",
+      "figureImage": "../assets/exam-1/q079__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q079__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 38,
+      "displayId": 38,
+      "sourceReference": "GYN 80",
+      "promptImage": "../assets/exam-1/q080__front__qblock.png",
+      "figureImage": "../assets/exam-1/q080__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q080__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 39,
+      "displayId": 39,
+      "sourceReference": "GYN 81",
+      "promptImage": "../assets/exam-1/q081__front__qblock.png",
+      "figureImage": "../assets/exam-1/q081__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q081__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 40,
+      "displayId": 40,
+      "sourceReference": "Respiratory 48",
+      "promptImage": "../assets/chapter-4/front_text__page_010_q048_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_005_q048_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 41,
+      "displayId": 41,
+      "sourceReference": "Urinary 32",
+      "promptImage": "../assets/chapter-6/front_imgtext__page_005_block_01_q_032.png",
+      "figureImage": "../assets/chapter-6/front_img__p005_block_01.png",
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_003_q032_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 42,
+      "displayId": 42,
+      "sourceReference": "Fluids 24",
+      "promptImage": "../assets/chapter-2/front_text__page_002_q024_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_002_q024_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 43,
+      "displayId": 43,
+      "sourceReference": "GYN 82",
+      "promptImage": "../assets/exam-1/q082__front__qblock.png",
+      "figureImage": "../assets/exam-1/q082__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q082__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 44,
+      "displayId": 44,
+      "sourceReference": "GYN 83",
+      "promptImage": "../assets/exam-1/q083__front__qblock.png",
+      "figureImage": "../assets/exam-1/q083__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q083__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 45,
+      "displayId": 45,
+      "sourceReference": "GYN 84",
+      "promptImage": "../assets/exam-1/q084__front__qblock.png",
+      "figureImage": "../assets/exam-1/q084__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q084__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 46,
+      "displayId": 46,
+      "sourceReference": "GYN 85",
+      "promptImage": "../assets/exam-1/q085__front__qblock.png",
+      "figureImage": "../assets/exam-1/q085__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q085__back__answer.png",
+      "correct": "d"
+    },
+    {
+      "id": 47,
+      "displayId": 47,
+      "sourceReference": "Respiratory 51",
+      "promptImage": "../assets/chapter-4/front_text__page_010_q051_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_005_q051_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 48,
+      "displayId": 48,
+      "sourceReference": "Urinary 34",
+      "promptImage": "../assets/chapter-6/front_imgtext__page_006_block_00_q_034.png",
+      "figureImage": "../assets/chapter-6/front_img__p006_block_00.png",
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_004_q034_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 49,
+      "displayId": 49,
+      "sourceReference": "Fluids 26",
+      "promptImage": "../assets/chapter-2/front_text__page_002_q026_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q026_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 50,
+      "displayId": 50,
+      "sourceReference": "GYN 86",
+      "promptImage": "../assets/exam-1/q086__front__qblock.png",
+      "figureImage": "../assets/exam-1/q086__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q086__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 51,
+      "displayId": 51,
+      "sourceReference": "GYN 87",
+      "promptImage": "../assets/exam-1/q087__front__qblock.png",
+      "figureImage": "../assets/exam-1/q087__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q087__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 52,
+      "displayId": 52,
+      "sourceReference": "GYN 88",
+      "promptImage": "../assets/exam-1/q088__front__qblock.png",
+      "figureImage": "../assets/exam-1/q088__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q088__back__answer.png",
+      "correct": "d"
+    },
+    {
+      "id": 53,
+      "displayId": 53,
+      "sourceReference": "GYN 89",
+      "promptImage": "../assets/exam-1/q089__front__qblock.png",
+      "figureImage": "../assets/exam-1/q089__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q089__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 54,
+      "displayId": 54,
+      "sourceReference": "Respiratory 54",
+      "promptImage": "../assets/chapter-4/front_text__page_010_q054_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_005_q054_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 55,
+      "displayId": 55,
+      "sourceReference": "Urinary 36",
+      "promptImage": "../assets/chapter-6/front_imgtext__page_006_block_02_q_036.png",
+      "figureImage": "../assets/chapter-6/front_img__p006_block_02.png",
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_004_q036_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 56,
+      "displayId": 56,
+      "sourceReference": "Fluids 27",
+      "promptImage": "../assets/chapter-2/front_imgtext__page_003_block_00_q_27.png",
+      "figureImage": "../assets/chapter-2/front_img__p003_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q027_a.png",
+      "correct": "a"
+    },
+    {
+      "id": 57,
+      "displayId": 57,
+      "sourceReference": "GYN 90",
+      "promptImage": "../assets/exam-1/q090__front__qblock.png",
+      "figureImage": "../assets/exam-1/q090__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q090__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 58,
+      "displayId": 58,
+      "sourceReference": "GYN 91",
+      "promptImage": "../assets/exam-1/q091__front__qblock.png",
+      "figureImage": "../assets/exam-1/q091__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q091__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 59,
+      "displayId": 59,
+      "sourceReference": "GYN 92",
+      "promptImage": "../assets/exam-1/q092__front__qblock.png",
+      "figureImage": "../assets/exam-1/q092__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q092__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 60,
+      "displayId": 60,
+      "sourceReference": "GYN 93",
+      "promptImage": "../assets/exam-1/q093__front__qblock.png",
+      "figureImage": "../assets/exam-1/q093__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q093__back__answer.png",
+      "correct": "a"
+    },
+    {
+      "id": 61,
+      "displayId": 61,
+      "sourceReference": "Respiratory 57",
+      "promptImage": "../assets/chapter-4/front_text__page_010_q057_d.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_006_q057_d.png",
+      "correct": "d"
+    },
+    {
+      "id": 62,
+      "displayId": 62,
+      "sourceReference": "Urinary 38",
+      "promptImage": "../assets/chapter-6/front_text__page_007_q038_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_004_q038_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 63,
+      "displayId": 63,
+      "sourceReference": "Fluids 29",
+      "promptImage": "../assets/chapter-2/front_imgtext__page_003_block_02_q_29.png",
+      "figureImage": "../assets/chapter-2/front_img__p003_block_02.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q029_c.png",
+      "correct": "c"
+    },
+    {
+      "id": 64,
+      "displayId": 64,
+      "sourceReference": "GYN 94",
+      "promptImage": "../assets/exam-1/q094__front__qblock.png",
+      "figureImage": "../assets/exam-1/q094__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q094__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 65,
+      "displayId": 65,
+      "sourceReference": "GYN 95",
+      "promptImage": "../assets/exam-1/q095__front__qblock.png",
+      "figureImage": "../assets/exam-1/q095__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q095__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 66,
+      "displayId": 66,
+      "sourceReference": "GYN 96",
+      "promptImage": "../assets/exam-1/q096__front__qblock.png",
+      "figureImage": "../assets/exam-1/q096__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q096__back__answer.png",
+      "correct": "b"
+    },
+    {
+      "id": 67,
+      "displayId": 67,
+      "sourceReference": "GYN 97",
+      "promptImage": "../assets/exam-1/q097__front__qblock.png",
+      "figureImage": "../assets/exam-1/q097__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q097__back__answer.png",
+      "correct": "c"
+    },
+    {
+      "id": 68,
+      "displayId": 68,
+      "sourceReference": "Respiratory 60",
+      "promptImage": "../assets/chapter-4/front_imgtext__page_011_block_00_q_60.png",
+      "figureImage": "../assets/chapter-4/front_img__p011_block_00.png",
+      "answerKeyImage": "../assets/chapter-4/back_ans__page_006_q060_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 69,
+      "displayId": 69,
+      "sourceReference": "Urinary 40",
+      "promptImage": "../assets/chapter-6/front_text__page_007_q040_a.png",
+      "figureImage": null,
+      "answerKeyImage": "../assets/chapter-6/back_ans__page_004_q040_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 70,
+      "displayId": 70,
+      "sourceReference": "Fluids 30",
+      "promptImage": "../assets/chapter-2/front_imgtext__page_004_block_00_q_30.png",
+      "figureImage": "../assets/chapter-2/front_img__p004_block_00.png",
+      "answerKeyImage": "../assets/chapter-2/back_ans__page_003_q030_b.png",
+      "correct": "b"
+    },
+    {
+      "id": 71,
+      "displayId": 71,
+      "sourceReference": "GYN 98",
+      "promptImage": "../assets/exam-1/q098__front__qblock.png",
+      "figureImage": "../assets/exam-1/q098__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q098__back__answer.png",
+      "correct": "d"
+    },
+    {
+      "id": 72,
+      "displayId": 72,
+      "sourceReference": "GYN 99",
+      "promptImage": "../assets/exam-1/q099__front__qblock.png",
+      "figureImage": "../assets/exam-1/q099__front__img.png",
+      "answerKeyImage": "../assets/exam-1/q099__back__answer.png",
+      "correct": "a"
+    }
+  ]
+}

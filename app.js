@@ -645,6 +645,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const [copyReadyState, setCopyReadyState] = useState("idle");
   const [copyReadyAutoState, setCopyReadyAutoState] = useState("idle");
   const [reportState, setReportState] = useState("idle");
+  const [confirmWrittenFinish, setConfirmWrittenFinish] = useState(false);
   const adminMode = exam.adminResetToken && getAdminTokenFromUrl() === exam.adminResetToken;
   const displayedLaunchUrl = useMemo(
     () => (adminMode ? launchUrl : buildStudentLaunchUrl()),
@@ -681,6 +682,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     setCopyReadyState("idle");
     setCopyReadyAutoState("idle");
     setReportState("idle");
+    setConfirmWrittenFinish(false);
   }, [storageKey, exam]);
 
   useEffect(() => {
@@ -893,6 +895,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     setActiveWarning(null);
     setCopyState("idle");
     setReportState("idle");
+    setConfirmWrittenFinish(false);
     setSession(createEmptySession(exam, false));
   }
 
@@ -976,6 +979,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   function triggerWrittenSection() {
     if (!hasWrittenSection) return;
+    setConfirmWrittenFinish(false);
     updateSession((previous) => ({
       ...previous,
       started: true,
@@ -989,6 +993,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   function finishWrittenSection() {
     if (!hasWrittenSection) return;
+    setConfirmWrittenFinish(false);
     updateSession((previous) => ({
       ...previous,
       started: true,
@@ -999,6 +1004,11 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
       currentIndex: 0,
       postExamFilter: previous.postExamFilter || "all",
     }));
+  }
+
+  function requestWrittenSectionFinish() {
+    if (!hasWrittenSection || !session.writtenSectionActive) return;
+    setConfirmWrittenFinish(true);
   }
 
   const resultsList = session.postExamFilter === "flagged" ? flaggedQuestions : questions;
@@ -1026,6 +1036,41 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               className: "mt-5 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700",
             },
             "Continue Exam"
+          )
+        )
+      ),
+    confirmWrittenFinish &&
+      React.createElement(
+        "div",
+        { className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" },
+        React.createElement(
+          "div",
+          { className: "w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-200" },
+          React.createElement("h2", { className: "text-2xl font-bold tracking-tight" }, "Finish written section early?"),
+          React.createElement(
+            "p",
+            { className: "mt-2 text-sm leading-6 text-slate-600" },
+            "Are you sure you're ready to submit the written section and continue to your results?"
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-5 flex flex-wrap gap-3" },
+            React.createElement(
+              "button",
+              {
+                onClick: () => setConfirmWrittenFinish(false),
+                className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50",
+              },
+              "Keep working"
+            ),
+            React.createElement(
+              "button",
+              {
+                onClick: finishWrittenSection,
+                className: "rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700",
+              },
+              "Finish early"
+            )
           )
         )
       ),
@@ -1427,6 +1472,18 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 { className: "rounded-3xl border border-slate-200 bg-slate-50 p-5" },
                 React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, formatDurationMinutes(exam.writtenSectionMinutes)),
                 React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Written section duration")
+              )
+            ),
+            React.createElement(
+              "div",
+              { className: "mt-8 flex flex-wrap gap-3" },
+              React.createElement(
+                "button",
+                {
+                  onClick: requestWrittenSectionFinish,
+                  className: "rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-700",
+                },
+                "Finish Written Section Early"
               )
             )
           )
