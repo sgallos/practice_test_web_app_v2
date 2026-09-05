@@ -6,6 +6,8 @@
   "durationMinutes": 150,
   "adminResetToken": "15f0b579-0c83-404c-b073-41971c54cbbd",
   "startAccessToken": "742fdef3-151b-46b1-8bfd-700ca498318c",
+  "resultsEndpoint": "https://script.google.com/macros/s/AKfycbxyMLMaV2vqGYsvuKwvrFVGQ4FRGan-Vhmv1xFe8tyLpksLxPQco7mSTxxvw1LWcY8TRg/exec",
+  "resultsSecret": "77f2ae48-e5ec-4608-a3a2-4edd86e15851",
   "warningThresholdsSeconds": [
     1800,
     600,

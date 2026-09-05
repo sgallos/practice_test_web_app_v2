@@ -34,6 +34,8 @@ for (const [index, questions] of chunks.entries()) {
     durationMinutes: questionCount * 1.5,
     adminResetToken: existing.adminResetToken ?? randomUUID(),
     startAccessToken: existing.startAccessToken ?? randomUUID(),
+    ...(existing.resultsEndpoint ? { resultsEndpoint: existing.resultsEndpoint } : {}),
+    ...(existing.resultsSecret ? { resultsSecret: existing.resultsSecret } : {}),
     warningThresholdsSeconds: [1800, 600, 300],
     questions,
   };
