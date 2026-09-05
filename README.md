@@ -156,6 +156,8 @@ The app accepts a JSON manifest with this shape:
   "durationMinutes": 60,
   "adminResetToken": "replace-this-token",
   "startAccessToken": "replace-this-start-token",
+  "resultsEndpoint": "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
+  "resultsSecret": "match-the-SHARED_SECRET-value-in-Code.gs",
   "warningThresholdsSeconds": [1800, 600, 120],
   "questions": [
     {
@@ -177,6 +179,8 @@ Fields:
 - `durationMinutes`: total exam time
 - `adminResetToken`: optional token that enables reset controls when passed as `?admin=...`
 - `startAccessToken`: optional token that keeps the public link locked until the released student link includes `?access=...`
+- `resultsEndpoint`: optional Google Apps Script Web App URL. When set, every submission logs a summary row plus one row per question to a Google Sheet, and the start screen shows a name/email field. Leave unset to disable logging entirely (no field, no network call). Falls back to `DEFAULT_RESULTS_ENDPOINT` in `app.js` if omitted.
+- `resultsSecret`: optional shared secret sent with each submission; must match `SHARED_SECRET` in `Code.gs` or the Apps Script rejects the request. Falls back to `DEFAULT_RESULTS_SECRET` in `app.js` if omitted.
 - `warningThresholdsSeconds`: optional warning popup times
 - `questions`: array of image-based questions
 - `promptImage`: main question image
@@ -185,6 +189,50 @@ Fields:
 - `correct`: one of `a`, `b`, `c`, or `d`
 
 For manifest-driven exams, use paths that are correct relative to the manifest file, such as `../assets/exam-1/q001-front.png`. Do not use local machine paths.
+
+## Results logging (Google Sheets as a backend)
+
+This app is static and has no server, but it can still log every exam
+submission to a Google Sheet in your Drive, which then acts as your results
+database and gradebook.
+
+How it works:
+- The name/email field only appears on exams that have `resultsEndpoint`
+  set. If it's unset, the start screen and exam behave exactly as before.
+  When shown, the value is remembered in the student's browser for next time.
+- Per-question time is tracked as the student works and saved into their
+  local session as they go, so it survives an accidental reload; time spent
+  with the tab in the background isn't counted toward whichever question
+  was on screen.
+- On submission, the app posts a JSON summary (score, total time, a
+  per-question breakdown, and a unique submission ID generated when the
+  attempt started) to a Google Apps Script Web App URL. If the request
+  can't be confirmed as delivered (offline, dropped connection), the next
+  time that results page loads it automatically retries — safe because the
+  backend recognizes the same submission ID and won't write it twice.
+- That script appends rows to two tabs in your Sheet: `Results` (one row
+  per submission) and `QuestionDetail` (one row per question per
+  submission, useful for spotting which questions students miss most or
+  spend the most time on). It checks the submission ID before writing, so
+  a reloaded results page or a retried send can't create duplicate rows,
+  and it locks itself during writes so two students submitting at once
+  can't collide.
+- The Sheet lives in your own Drive. Share it with yourself or anyone else
+  the normal Google Sheets way to see live results.
+
+Full setup walkthrough, including the one manual authorization step Google
+requires and how to set a shared secret so strangers can't post fake rows:
+`scripts/google-apps-script/SETUP.md`. The script itself lives at
+`scripts/google-apps-script/Code.gs`.
+
+The shared secret is a deterrent, not real security — since the app is a
+static site, the secret is visible to anyone who views page source or the
+manifest JSON. See the caveat in SETUP.md before relying on it for
+anything sensitive.
+
+Logging is best-effort: if the request fails or the endpoint isn't set, the
+exam still runs normally, a logging hiccup never blocks a student from
+finishing or seeing their results.
 
 ## Production notes
 
