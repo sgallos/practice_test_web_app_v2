@@ -8,6 +8,15 @@ const AUTO_START_PARAM = "start";
 const ADMIN_QUERY_PARAM = "admin";
 const ACCESS_QUERY_PARAM = "access";
 const VALID_OPTIONS = ["a", "b", "c", "d"];
+// Paste your deployed Google Apps Script Web App URL here to log every
+// submission to a Google Sheet. Leave blank to disable result logging.
+// A manifest can override this per-exam with a "resultsEndpoint" field.
+// See scripts/google-apps-script/SETUP.md for how to create this URL.
+const DEFAULT_RESULTS_ENDPOINT = "";
+// Must match SHARED_SECRET in Code.gs, or the Apps Script will reject the
+// request. A manifest can override this per-exam with "resultsSecret".
+const DEFAULT_RESULTS_SECRET = "";
+const STUDENT_ID_STORAGE_KEY = "practice-test-student-id";
 
 function getSearchParams() {
   try {
@@ -181,6 +190,8 @@ function normalizeExamManifest(manifest, sourceLabel, assetBaseUrl) {
     writtenSectionLabel: manifest.writtenSectionLabel ? String(manifest.writtenSectionLabel) : "Written section",
     adminResetToken: manifest.adminResetToken ? String(manifest.adminResetToken) : "",
     startAccessToken: manifest.startAccessToken ? String(manifest.startAccessToken) : "",
+    resultsEndpoint: manifest.resultsEndpoint ? String(manifest.resultsEndpoint) : DEFAULT_RESULTS_ENDPOINT,
+    resultsSecret: manifest.resultsSecret ? String(manifest.resultsSecret) : DEFAULT_RESULTS_SECRET,
     warningThresholds,
     questions,
   };
@@ -246,6 +257,18 @@ function createEmptySession(exam, autoStart) {
     reviewOpen: false,
     dismissedWarnings: [],
     postExamFilter: "all",
+    // Identifies this attempt so a page reload can't cause the same
+    // submission to be logged twice (client-side and server-side guard).
+    submissionId: "",
+    // Persisted per-question time spent, in milliseconds, keyed by
+    // question id. Kept in the session (and therefore localStorage) so a
+    // reload doesn't lose timing data.
+    questionTimeMs: {},
+    // "" (not submitted / logging not attempted yet), "pending" (a send is
+    // in flight or was interrupted before confirming), or "sent" (the
+    // fetch resolved). A reload that finds "pending" retries the send —
+    // safe because the backend de-dupes by submissionId.
+    resultsStatus: "",
   };
 }
 
@@ -289,6 +312,16 @@ function sanitizeSession(rawSession, exam, autoStart) {
     : fallback.writtenSectionRemainingSeconds;
   const writtenSectionActive = exam.writtenSectionMinutes > 0 ? !!rawSession.writtenSectionActive && !rawSession.submitted : false;
 
+  const questionTimeMs = {};
+  if (rawSession.questionTimeMs && typeof rawSession.questionTimeMs === "object") {
+    Object.entries(rawSession.questionTimeMs).forEach(([questionId, value]) => {
+      const numericValue = Number(value);
+      if (validIds.has(String(questionId)) && Number.isFinite(numericValue) && numericValue >= 0) {
+        questionTimeMs[String(questionId)] = numericValue;
+      }
+    });
+  }
+
   return {
     currentIndex,
     answers,
@@ -303,7 +336,17 @@ function sanitizeSession(rawSession, exam, autoStart) {
       ? rawSession.dismissedWarnings.filter((value) => exam.warningThresholds.includes(value))
       : [],
     postExamFilter: rawSession.postExamFilter === "flagged" ? "flagged" : "all",
+    submissionId: typeof rawSession.submissionId === "string" ? rawSession.submissionId : "",
+    questionTimeMs,
+    resultsStatus: ["pending", "sent"].includes(rawSession.resultsStatus) ? rawSession.resultsStatus : "",
   };
+}
+
+function generateSubmissionId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `sub_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
 function loadSession(storageKey, exam, autoStart) {
@@ -393,6 +436,70 @@ function buildReportRows(questions, session) {
       correct: !!selectedAnswer && selectedAnswer === correctAnswer,
     };
   });
+}
+
+function buildResultsPayload(exam, questions, session, score, studentId, questionTimeMs, submissionId) {
+  const imageTimeUsed = Math.max(0, exam.durationMinutes * 60 - session.remainingSeconds);
+  const writtenTimeUsed = exam.writtenSectionMinutes > 0
+    ? Math.max(0, exam.writtenSectionMinutes * 60 - session.writtenSectionRemainingSeconds)
+    : 0;
+
+  return {
+    submissionId,
+    sharedSecret: exam.resultsSecret || "",
+    examId: exam.id,
+    examTitle: exam.title,
+    studentId: (studentId || "").trim() || "Unknown student",
+    submittedAtIso: new Date().toISOString(),
+    score,
+    totalQuestions: questions.length,
+    scorePercent: questions.length ? Math.round((score / questions.length) * 1000) / 10 : 0,
+    totalTimeSeconds: imageTimeUsed + writtenTimeUsed,
+    questions: questions.map((question) => {
+      const selected = session.answers[question.id] || null;
+      return {
+        questionId: getQuestionDisplayId(question),
+        selected,
+        correct: question.correct || "",
+        isCorrect: !!selected && selected === question.correct,
+        flagged: !!session.flagged[question.id],
+        timeSeconds: Math.round((questionTimeMs[question.id] || 0) / 1000),
+      };
+    }),
+  };
+}
+
+// onDelivered fires once the fetch promise resolves — meaning the request
+// left the browser and got some response, even though "no-cors" mode means
+// we can't read whether Apps Script actually wrote the row. It does NOT
+// fire on a network-level failure (offline, DNS, etc.), so the caller can
+// treat "never delivered" as retryable on the next page load. The backend
+// de-dupes by submissionId, so retrying a request that actually succeeded
+// is safe — worst case it's a wasted, harmless duplicate POST.
+function sendResultsToBackend(exam, questions, session, score, studentId, questionTimeMs, submissionId, onDelivered) {
+  const endpoint = exam.resultsEndpoint;
+  if (!endpoint) return;
+
+  const payload = buildResultsPayload(exam, questions, session, score, studentId, questionTimeMs, submissionId);
+
+  try {
+    fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    })
+      .then(() => {
+        if (typeof onDelivered === "function") onDelivered();
+      })
+      .catch(() => {
+        // Logging is best-effort. A network hiccup should never block a
+        // student from seeing their results; leaving resultsStatus as
+        // "pending" means the next load retries automatically.
+      });
+  } catch {
+    // Ignore. See note above.
+  }
 }
 
 function buildReportTable(title, rows, emptyText) {
@@ -646,6 +753,20 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const [copyReadyAutoState, setCopyReadyAutoState] = useState("idle");
   const [reportState, setReportState] = useState("idle");
   const [confirmWrittenFinish, setConfirmWrittenFinish] = useState(false);
+  const [studentId, setStudentId] = useState(() => {
+    try {
+      return localStorage.getItem(STUDENT_ID_STORAGE_KEY) || "";
+    } catch {
+      return "";
+    }
+  });
+  const questionTimeMsRef = React.useRef({});
+  const activeQuestionRef = React.useRef({ id: null, enteredAt: null });
+  // Guards against firing a second send attempt within the same page load
+  // (e.g. from the effect re-running when resultsStatus flips to "pending").
+  // It intentionally does NOT persist across reloads, so a "pending" status
+  // found on a fresh load is retried exactly once per load.
+  const sendAttemptedRef = React.useRef(false);
   const adminMode = exam.adminResetToken && getAdminTokenFromUrl() === exam.adminResetToken;
   const displayedLaunchUrl = useMemo(
     () => (adminMode ? launchUrl : buildStudentLaunchUrl()),
@@ -676,7 +797,13 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }, [exam.title, exam.description]);
 
   useEffect(() => {
-    setSession(loadSession(storageKey, exam, urlHasAutoStart()));
+    const loaded = loadSession(storageKey, exam, urlHasAutoStart());
+    setSession(loaded);
+    // Seed the in-memory timing cache from whatever was already persisted,
+    // so a reload continues accumulating instead of losing prior time.
+    questionTimeMsRef.current = { ...loaded.questionTimeMs };
+    activeQuestionRef.current = { id: null, enteredAt: null };
+    sendAttemptedRef.current = false;
     setActiveWarning(null);
     setCopyState("idle");
     setCopyReadyState("idle");
@@ -688,6 +815,158 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   useEffect(() => {
     saveSession(storageKey, session);
   }, [storageKey, session]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STUDENT_ID_STORAGE_KEY, studentId || "");
+    } catch {
+      // Ignore storage failures.
+    }
+  }, [studentId]);
+
+  // Tracks how long the student spends on each question. Runs a small
+  // internal clock keyed off the currently visible question id; whenever
+  // that changes (navigation, the tab going to the background, or the exam
+  // finishing) it banks the elapsed time against the question that was
+  // active, both into the fast in-memory ref and into the persisted
+  // session so a page reload doesn't lose it.
+  function recordElapsedForActiveQuestion() {
+    const active = activeQuestionRef.current;
+    if (!active.id || !active.enteredAt) return;
+    const elapsedMs = Date.now() - active.enteredAt;
+    if (elapsedMs <= 0) return;
+    const questionId = active.id;
+    questionTimeMsRef.current[questionId] = (questionTimeMsRef.current[questionId] || 0) + elapsedMs;
+    setSession((previous) => ({
+      ...previous,
+      questionTimeMs: {
+        ...previous.questionTimeMs,
+        [questionId]: (previous.questionTimeMs[questionId] || 0) + elapsedMs,
+      },
+    }));
+  }
+
+  useEffect(() => {
+    if (!session.started || session.submitted || session.writtenSectionActive) {
+      recordElapsedForActiveQuestion();
+      activeQuestionRef.current = { id: null, enteredAt: null };
+      return;
+    }
+
+    recordElapsedForActiveQuestion();
+    const activeId = questions[session.currentIndex] ? questions[session.currentIndex].id : null;
+    activeQuestionRef.current = { id: activeId, enteredAt: Date.now() };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.currentIndex, session.started, session.submitted, session.writtenSectionActive]);
+
+  // Pause the per-question clock while the tab is hidden so time spent in
+  // another tab/app isn't attributed to whichever question was on screen
+  // when the student tabbed away.
+  useEffect(() => {
+    if (typeof document === "undefined") return undefined;
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        recordElapsedForActiveQuestion();
+        if (activeQuestionRef.current.id) {
+          activeQuestionRef.current = { ...activeQuestionRef.current, enteredAt: null };
+        }
+      } else if (activeQuestionRef.current.id && !activeQuestionRef.current.enteredAt) {
+        activeQuestionRef.current = { ...activeQuestionRef.current, enteredAt: Date.now() };
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Last-resort checkpoint: if the tab is closed or hard-reloaded before
+  // the periodic navigation/visibility checkpoints above catch it, flush
+  // the in-progress question's elapsed time straight to localStorage. This
+  // writes directly (bypassing setSession/React) because there's no
+  // guarantee a state update scheduled during pagehide/beforeunload gets a
+  // chance to render before the page actually unloads.
+  useEffect(() => {
+    function flushTimingToStorage() {
+      const active = activeQuestionRef.current;
+      if (active.id && active.enteredAt) {
+        const elapsedMs = Date.now() - active.enteredAt;
+        if (elapsedMs > 0) {
+          questionTimeMsRef.current[active.id] = (questionTimeMsRef.current[active.id] || 0) + elapsedMs;
+        }
+        // Both "pagehide" and "beforeunload" can fire for the same
+        // navigation. Clearing enteredAt here means a second call banks
+        // zero additional time instead of re-counting the same interval.
+        activeQuestionRef.current = { ...active, enteredAt: null };
+      }
+      try {
+        const raw = localStorage.getItem(storageKey);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (parsed && typeof parsed === "object") {
+          parsed.questionTimeMs = { ...questionTimeMsRef.current };
+          localStorage.setItem(storageKey, JSON.stringify(parsed));
+        }
+      } catch {
+        // Best effort only.
+      }
+    }
+
+    // "pagehide" doesn't always mean the page is gone for good — e.g. a
+    // bfcache navigation can restore the exact same page later via
+    // "pageshow" without re-running this component's mount effect. Resume
+    // the clock in that case so the pause above doesn't stall it forever.
+    function handlePageShow() {
+      if (typeof document !== "undefined" && document.hidden) return;
+      const active = activeQuestionRef.current;
+      if (active.id && !active.enteredAt) {
+        activeQuestionRef.current = { ...active, enteredAt: Date.now() };
+      }
+    }
+
+    window.addEventListener("pagehide", flushTimingToStorage);
+    window.addEventListener("beforeunload", flushTimingToStorage);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pagehide", flushTimingToStorage);
+      window.removeEventListener("beforeunload", flushTimingToStorage);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [storageKey]);
+
+  // Generate the submissionId as soon as the attempt actually starts
+  // (rather than waiting until submit), and persist it immediately. This
+  // way the id is stable and already saved well before the exam finishes,
+  // instead of being invented at submit time.
+  useEffect(() => {
+    if (!exam.resultsEndpoint) return;
+    if (!session.started || session.submissionId) return;
+    setSession((previous) => (previous.submissionId ? previous : { ...previous, submissionId: generateSubmissionId() }));
+  }, [exam.resultsEndpoint, session.started, session.submissionId]);
+
+  useEffect(() => {
+    if (!exam.resultsEndpoint) return;
+    if (!session.submitted || session.resultsStatus === "sent") return;
+    // Only attempt once per page load. If resultsStatus is already
+    // "pending" here, it's a leftover from a previous load whose fetch
+    // never confirmed (tab closed, network dropped) — retrying is safe
+    // because the backend de-dupes by submissionId.
+    if (sendAttemptedRef.current) return;
+    sendAttemptedRef.current = true;
+
+    recordElapsedForActiveQuestion();
+    const submissionId = session.submissionId || generateSubmissionId();
+    const timeSnapshot = { ...questionTimeMsRef.current };
+    setSession((previous) => ({
+      ...previous,
+      submissionId: previous.submissionId || submissionId,
+      resultsStatus: "pending",
+    }));
+    sendResultsToBackend(exam, questions, session, score, studentId, timeSnapshot, submissionId, () => {
+      setSession((previous) => ({ ...previous, resultsStatus: "sent" }));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.submitted, session.resultsStatus]);
 
   useEffect(() => {
     if (!startAuthorized && session.started && !session.submitted) {
@@ -892,6 +1171,12 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     } catch {
       // Ignore storage failures.
     }
+    // Clear per-attempt timing/send state too, or a fresh attempt would
+    // inherit stale elapsed time (and a stale "already sending" guard)
+    // from whatever attempt was just cleared.
+    questionTimeMsRef.current = {};
+    activeQuestionRef.current = { id: null, enteredAt: null };
+    sendAttemptedRef.current = false;
     setActiveWarning(null);
     setCopyState("idle");
     setReportState("idle");
@@ -1329,9 +1614,28 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Answered, unanswered, and flagged status")
                 )
               ),
+              exam.resultsEndpoint &&
+                React.createElement(
+                  "div",
+                  { className: "mt-8" },
+                  React.createElement(
+                    "label",
+                    { className: "block text-sm font-medium text-slate-700", htmlFor: "student-id-input" },
+                    "Your name or email (used to label your results)"
+                  ),
+                  React.createElement("input", {
+                    id: "student-id-input",
+                    type: "text",
+                    value: studentId,
+                    onChange: (event) => setStudentId(event.target.value),
+                    placeholder: "e.g. Jordan Lee or jordan@email.com",
+                    className:
+                      "mt-2 w-full max-w-sm rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm focus:border-slate-500 focus:outline-none",
+                  })
+                ),
               React.createElement(
                 "div",
-                { className: "mt-8 flex flex-wrap gap-3" },
+                { className: "mt-4 flex flex-wrap gap-3" },
                 React.createElement(
                   "button",
                   {
