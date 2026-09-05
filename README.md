@@ -197,6 +197,7 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - `manifests/exam-2.json` contains a separate 50-question Chapter 1 Version 2 subset shifted one source question forward from Version 1.
 - `manifests/exam-3.json` contains a separate 50-question Chapter 1 Version 3 subset shifted two source questions forward from Version 1.
 - `manifests/chapter-1-full.json` preserves the full 425-question import.
+- `manifests/gyn-comprehensive-v1.json` through `manifests/gyn-comprehensive-v5.json` split the full Chapter 1 bank into four 100-question exams and one 25-question exam.
 - `manifests/chapter-2-v1.json` contains the 48-question Chapter 2 Version 1 subset.
 - `manifests/chapter-2-full.json` preserves the full 144-question Chapter 2 import.
 - `manifests/chapter-4-v1.json` contains the 43-question Chapter 4 Version 1 subset.
@@ -257,6 +258,22 @@ Notes:
 - `exams.js` sets `./manifests/exam-1.json` as the default manifest, so the base app URL opens Chapter 1 Version 1 automatically.
 
 If you want to create another exam later, start from `manifests/exam-template.json`.
+
+## GYN comprehensive exam series
+
+The full 425-question Chapter 1 bank is divided in bank order across five non-overlapping exams:
+
+- Version 1: 100 questions, 150 minutes, source questions 1-100
+- Version 2: 100 questions, 150 minutes, source questions 101-201 (source question 112 is absent from the bank)
+- Version 3: 100 questions, 150 minutes, source questions 202-301
+- Version 4: 100 questions, 150 minutes, source questions 302-401
+- Version 5: 25 questions, 37.5 minutes, source questions 402-426
+
+Regenerate the manifests without changing existing access tokens:
+
+```bash
+node scripts/generate-gyn-comprehensive-exams.mjs
+```
 
 ## Current Chapter 1 Version 2 exam
 
