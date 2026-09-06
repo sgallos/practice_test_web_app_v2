@@ -34,8 +34,10 @@ for (const [index, questions] of chunks.entries()) {
     durationMinutes: questionCount * 1.5,
     adminResetToken: existing.adminResetToken ?? randomUUID(),
     startAccessToken: existing.startAccessToken ?? randomUUID(),
-    ...(existing.resultsEndpoint ? { resultsEndpoint: existing.resultsEndpoint } : {}),
-    ...(existing.resultsSecret ? { resultsSecret: existing.resultsSecret } : {}),
+    // Never a URL or secret here — results logging now goes through
+    // same-origin Netlify Functions with no per-manifest config beyond
+    // this on/off flag. See scripts/google-apps-script/SETUP.md.
+    resultsEnabled: typeof existing.resultsEnabled === "boolean" ? existing.resultsEnabled : true,
     warningThresholdsSeconds: [1800, 600, 300],
     questions,
   };
