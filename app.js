@@ -834,6 +834,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     }
   });
   const [resultsHistory, setResultsHistory] = useState({ status: "idle", data: null, error: "" });
+  const [resultsPanelOpen, setResultsPanelOpen] = useState(false);
   const questionTimeMsRef = React.useRef({});
   const activeQuestionRef = React.useRef({ id: null, enteredAt: null });
   // Guards against firing a second send attempt within the same page load
@@ -879,6 +880,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     activeQuestionRef.current = { id: null, enteredAt: null };
     sendAttemptedRef.current = false;
     setResultsHistory({ status: "idle", data: null, error: "" });
+    setResultsPanelOpen(false);
     setActiveWarning(null);
     setCopyState("idle");
     setCopyReadyState("idle");
@@ -922,7 +924,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   useEffect(() => {
-    if (!session.started || session.submitted || session.writtenSectionActive) {
+    if (!session.started || session.submitted || session.writtenSectionActive || resultsPanelOpen) {
       recordElapsedForActiveQuestion();
       activeQuestionRef.current = { id: null, enteredAt: null };
       return;
@@ -932,7 +934,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     const activeId = questions[session.currentIndex] ? questions[session.currentIndex].id : null;
     activeQuestionRef.current = { id: activeId, enteredAt: Date.now() };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.currentIndex, session.started, session.submitted, session.writtenSectionActive]);
+  }, [session.currentIndex, session.started, session.submitted, session.writtenSectionActive, resultsPanelOpen]);
 
   // Pause the per-question clock while the tab is hidden so time spent in
   // another tab/app isn't attributed to whichever question was on screen
@@ -1209,6 +1211,10 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   // submission is filed under.
   function fetchResultsHistory() {
     if (!exam.resultsEnabled) return;
+    if (!studentId.trim()) {
+      setResultsHistory({ status: "error", data: null, error: "Enter your name or email first." });
+      return;
+    }
     const token = loadOrCreateStudentToken(studentId);
     setResultsHistory({ status: "loading", data: null, error: "" });
 
@@ -1232,6 +1238,19 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
       .catch(() => {
         setResultsHistory({ status: "error", data: null, error: "Could not reach the results backend." });
       });
+  }
+
+  function openResultsPanel() {
+    setResultsPanelOpen(true);
+    if (studentId.trim()) {
+      fetchResultsHistory();
+    } else {
+      setResultsHistory({ status: "idle", data: null, error: "" });
+    }
+  }
+
+  function closeResultsPanel() {
+    setResultsPanelOpen(false);
   }
 
   function selectOption(questionId, optionId) {
@@ -1435,6 +1454,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   const resultsList = session.postExamFilter === "flagged" ? flaggedQuestions : questions;
+  const identityLocked = session.started && !session.submitted;
 
   return React.createElement(
     "div",
@@ -1459,6 +1479,149 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               className: "mt-5 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700",
             },
             "Continue Exam"
+          )
+        )
+      ),
+    exam.resultsEnabled &&
+      React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: openResultsPanel,
+          className:
+            "fixed bottom-4 right-4 z-40 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-white/20 hover:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-300",
+        },
+        "Past Results"
+      ),
+    resultsPanelOpen &&
+      React.createElement(
+        "div",
+        {
+          className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-labelledby": "past-results-title",
+        },
+        React.createElement(
+          "div",
+          { className: "max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-200" },
+          React.createElement(
+            "div",
+            { className: "flex items-start justify-between gap-4" },
+            React.createElement(
+              "div",
+              null,
+              React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Student history"),
+              React.createElement("h2", { id: "past-results-title", className: "mt-1 text-2xl font-bold tracking-tight" }, "Past Results"),
+              React.createElement(
+                "p",
+                { className: "mt-2 text-sm leading-6 text-slate-600" },
+                "View attempts saved for this identity on this browser."
+              )
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: closeResultsPanel,
+                className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50",
+              },
+              "Close"
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-6" },
+            React.createElement(
+              "label",
+              { className: "block text-sm font-medium text-slate-700", htmlFor: "results-student-id-input" },
+              "Your name or email"
+            ),
+            React.createElement("input", {
+              id: "results-student-id-input",
+              type: "text",
+              value: studentId,
+              disabled: identityLocked,
+              onChange: (event) => {
+                setStudentId(event.target.value);
+                setResultsHistory({ status: "idle", data: null, error: "" });
+              },
+              placeholder: "e.g. Jordan Lee or jordan@email.com",
+              className:
+                "mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500",
+            }),
+            identityLocked &&
+              React.createElement(
+                "p",
+                { className: "mt-2 text-xs leading-5 text-slate-500" },
+                "This identity is locked until the current attempt is submitted. The exam timer continues while this panel is open."
+              ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: fetchResultsHistory,
+                disabled: resultsHistory.status === "loading",
+                className:
+                  "mt-4 rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-400",
+              },
+              resultsHistory.status === "loading" ? "Loading results..." : "Load past results"
+            ),
+            resultsHistory.status === "error" &&
+              React.createElement("p", { className: "mt-3 text-sm text-rose-700" }, resultsHistory.error),
+            resultsHistory.status === "loaded" &&
+              React.createElement(
+                "div",
+                { className: "mt-5 overflow-hidden rounded-2xl border border-slate-200" },
+                resultsHistory.data.attempts.length === 0
+                  ? React.createElement(
+                      "p",
+                      { className: "p-4 text-sm text-slate-600" },
+                      "No past attempts found yet for this name/email."
+                    )
+                  : React.createElement(
+                      "div",
+                      { className: "overflow-x-auto" },
+                      React.createElement(
+                        "table",
+                        { className: "w-full min-w-[520px] text-left text-sm" },
+                        React.createElement(
+                          "thead",
+                          { className: "bg-slate-50 text-xs uppercase tracking-wide text-slate-500" },
+                          React.createElement(
+                            "tr",
+                            null,
+                            React.createElement("th", { className: "px-4 py-3" }, "Exam"),
+                            React.createElement("th", { className: "px-4 py-3" }, "Score"),
+                            React.createElement("th", { className: "px-4 py-3" }, "Date")
+                          )
+                        ),
+                        React.createElement(
+                          "tbody",
+                          null,
+                          ...[...resultsHistory.data.attempts]
+                            .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
+                            .map((attempt, index) =>
+                              React.createElement(
+                                "tr",
+                                { key: index, className: "border-t border-slate-200" },
+                                React.createElement("td", { className: "px-4 py-3" }, attempt["Exam Title"]),
+                                React.createElement(
+                                  "td",
+                                  { className: "px-4 py-3 font-medium" },
+                                  `${attempt["Score"]}/${attempt["Total Questions"]} (${attempt["Score Percent"]}%)`
+                                ),
+                                React.createElement(
+                                  "td",
+                                  { className: "px-4 py-3 text-slate-600" },
+                                  attempt["Timestamp"] ? new Date(attempt["Timestamp"]).toLocaleString() : ""
+                                )
+                              )
+                            )
+                        )
+                      )
+                    )
+              )
           )
         )
       ),
@@ -1774,62 +1937,11 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                     "button",
                     {
                       type: "button",
-                      onClick: fetchResultsHistory,
+                      onClick: openResultsPanel,
                       className: "mt-3 text-sm font-medium text-slate-600 underline decoration-dotted hover:text-slate-900",
                     },
-                    resultsHistory.status === "loading" ? "Loading your past results…" : "View my past results"
-                  ),
-                  resultsHistory.status === "error" &&
-                    React.createElement("p", { className: "mt-2 text-sm text-rose-700" }, resultsHistory.error),
-                  resultsHistory.status === "loaded" &&
-                    React.createElement(
-                      "div",
-                      { className: "mt-3 max-w-xl overflow-hidden rounded-2xl border border-slate-200" },
-                      resultsHistory.data.attempts.length === 0
-                        ? React.createElement(
-                            "p",
-                            { className: "p-4 text-sm text-slate-600" },
-                            "No past attempts found yet for this name/email."
-                          )
-                        : React.createElement(
-                            "table",
-                            { className: "w-full text-left text-sm" },
-                            React.createElement(
-                              "thead",
-                              { className: "bg-slate-50 text-xs uppercase tracking-wide text-slate-500" },
-                              React.createElement(
-                                "tr",
-                                null,
-                                React.createElement("th", { className: "px-4 py-2" }, "Exam"),
-                                React.createElement("th", { className: "px-4 py-2" }, "Score"),
-                                React.createElement("th", { className: "px-4 py-2" }, "Date")
-                              )
-                            ),
-                            React.createElement(
-                              "tbody",
-                              null,
-                              [...resultsHistory.data.attempts]
-                                .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
-                                .map((attempt, index) =>
-                                  React.createElement(
-                                    "tr",
-                                    { key: index, className: "border-t border-slate-200" },
-                                    React.createElement("td", { className: "px-4 py-2" }, attempt["Exam Title"]),
-                                    React.createElement(
-                                      "td",
-                                      { className: "px-4 py-2" },
-                                      `${attempt["Score"]}/${attempt["Total Questions"]} (${attempt["Score Percent"]}%)`
-                                    ),
-                                    React.createElement(
-                                      "td",
-                                      { className: "px-4 py-2" },
-                                      attempt["Timestamp"] ? new Date(attempt["Timestamp"]).toLocaleString() : ""
-                                    )
-                                  )
-                                )
-                            )
-                          )
-                    )
+                    "Open past results"
+                  )
                 ),
               React.createElement(
                 "div",
