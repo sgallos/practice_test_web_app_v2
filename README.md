@@ -266,6 +266,7 @@ schema is designed so these can be layered on without another migration.
 - `manifests/exam-3.json` contains a separate 50-question Chapter 1 Version 3 subset shifted two source questions forward from Version 1.
 - `manifests/chapter-1-full.json` preserves the full 425-question import.
 - `manifests/gyn-comprehensive-v1.json` through `manifests/gyn-comprehensive-v5.json` split the full Chapter 1 bank into four 100-question exams and one 25-question exam.
+- `manifests/final-exam.json` contains the 100-question Final Exam: a mixed set from the Chapter 1 bank (about half picture and half described-cell questions) built to mirror the real exam.
 - `manifests/chapter-2-v1.json` contains the 48-question Chapter 2 Version 1 subset.
 - `manifests/chapter-2-full.json` preserves the full 144-question Chapter 2 import.
 - `manifests/chapter-4-v1.json` contains the 43-question Chapter 4 Version 1 subset.
