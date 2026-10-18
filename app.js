@@ -8,6 +8,23 @@ const AUTO_START_PARAM = "start";
 const ADMIN_QUERY_PARAM = "admin";
 const ACCESS_QUERY_PARAM = "access";
 const VALID_OPTIONS = ["a", "b", "c", "d"];
+// Results logging posts to same-origin Netlify Functions, never directly
+// to Google Apps Script — the real endpoint URL and shared secret live in
+// Netlify environment variables (see scripts/google-apps-script/SETUP.md),
+// so nothing secret ships in this file or in any manifest.
+const SUBMIT_RESULTS_PATH = "/.netlify/functions/submit-results";
+const GET_RESULTS_PATH = "/.netlify/functions/get-results";
+// Set to true by default; a manifest can turn logging off per-exam with
+// "resultsEnabled": false.
+const DEFAULT_RESULTS_ENABLED = true;
+const STUDENT_ID_STORAGE_KEY = "practice-test-student-id";
+// Identifies students across every exam so their results can be looked up
+// together later. Stored as a map of { [studentId]: token } — one entry
+// per distinct name/email typed in this browser — so switching between
+// identities (e.g. testing with several fake student emails in the same
+// browser) keeps each one's own token and history instead of the newest
+// identity overwriting the last one stored.
+const STUDENT_TOKEN_STORAGE_KEY = "practice-test-student-token";
 
 function getSearchParams() {
   try {
@@ -181,6 +198,7 @@ function normalizeExamManifest(manifest, sourceLabel, assetBaseUrl) {
     writtenSectionLabel: manifest.writtenSectionLabel ? String(manifest.writtenSectionLabel) : "Written section",
     adminResetToken: manifest.adminResetToken ? String(manifest.adminResetToken) : "",
     startAccessToken: manifest.startAccessToken ? String(manifest.startAccessToken) : "",
+    resultsEnabled: typeof manifest.resultsEnabled === "boolean" ? manifest.resultsEnabled : DEFAULT_RESULTS_ENABLED,
     warningThresholds,
     questions,
   };
@@ -246,6 +264,24 @@ function createEmptySession(exam, autoStart) {
     reviewOpen: false,
     dismissedWarnings: [],
     postExamFilter: "all",
+    // Identifies this attempt so a page reload can't cause the same
+    // submission to be logged twice (client-side and server-side guard).
+    submissionId: "",
+    // The access token this specific attempt is submitted under, locked in
+    // once when the attempt starts (see the effect in ExamPlayer). Storing
+    // it on the session — not in floating component state — means a name
+    // typed for an earlier, unrelated action (like checking someone else's
+    // "past results" before starting) can never leak into this attempt.
+    token: "",
+    // Persisted per-question time spent, in milliseconds, keyed by
+    // question id. Kept in the session (and therefore localStorage) so a
+    // reload doesn't lose timing data.
+    questionTimeMs: {},
+    // "" (not submitted / logging not attempted yet), "pending" (a send is
+    // in flight or was interrupted before confirming), or "sent" (the
+    // fetch resolved). A reload that finds "pending" retries the send —
+    // safe because the backend de-dupes by submissionId.
+    resultsStatus: "",
   };
 }
 
@@ -289,6 +325,16 @@ function sanitizeSession(rawSession, exam, autoStart) {
     : fallback.writtenSectionRemainingSeconds;
   const writtenSectionActive = exam.writtenSectionMinutes > 0 ? !!rawSession.writtenSectionActive && !rawSession.submitted : false;
 
+  const questionTimeMs = {};
+  if (rawSession.questionTimeMs && typeof rawSession.questionTimeMs === "object") {
+    Object.entries(rawSession.questionTimeMs).forEach(([questionId, value]) => {
+      const numericValue = Number(value);
+      if (validIds.has(String(questionId)) && Number.isFinite(numericValue) && numericValue >= 0) {
+        questionTimeMs[String(questionId)] = numericValue;
+      }
+    });
+  }
+
   return {
     currentIndex,
     answers,
@@ -303,7 +349,76 @@ function sanitizeSession(rawSession, exam, autoStart) {
       ? rawSession.dismissedWarnings.filter((value) => exam.warningThresholds.includes(value))
       : [],
     postExamFilter: rawSession.postExamFilter === "flagged" ? "flagged" : "all",
+    submissionId: typeof rawSession.submissionId === "string" ? rawSession.submissionId : "",
+    token: typeof rawSession.token === "string" ? rawSession.token : "",
+    questionTimeMs,
+    resultsStatus: ["pending", "sent"].includes(rawSession.resultsStatus) ? rawSession.resultsStatus : "",
   };
+}
+
+function generateId(prefix) {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// Loads the student's access token if it was generated for the same
+// studentId text that's currently entered, or generates (and persists) a
+// fresh one otherwise. This is deliberately keyed off the exact studentId
+// string rather than being a single fixed per-browser token: typing a
+// different name/email (e.g. testing with several fake student accounts
+// in the same browser) should read as a different student, not silently
+// merge into whichever token happened to be saved first.
+// Caps how many distinct identities one browser remembers tokens for.
+// Generous for testing with a handful of fake student accounts; if it's
+// ever exceeded, the oldest-added identity's token is forgotten (that
+// student would just get a new one and a fresh history next time).
+const MAX_STORED_STUDENT_IDENTITIES = 25;
+
+function loadStudentTokenMap() {
+  try {
+    const raw = localStorage.getItem(STUDENT_TOKEN_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveStudentTokenMap(map) {
+  try {
+    localStorage.setItem(STUDENT_TOKEN_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // Best effort — logging still works for this session even if the map
+    // can't be persisted, it just won't survive a reload.
+  }
+}
+
+// Looks up (or creates) this browser's access token for one specific
+// name/email. The map keeps a separate token per distinct identity typed
+// in this browser, so switching between several identities — e.g. testing
+// with a few fake student accounts — never overwrites or loses access to
+// an earlier one's history the way a single stored {studentId, token}
+// pair would.
+function loadOrCreateStudentToken(studentId) {
+  const normalized = (studentId || "").trim();
+  const map = loadStudentTokenMap();
+
+  if (typeof map[normalized] === "string" && map[normalized]) {
+    return map[normalized];
+  }
+
+  const token = generateId("tok");
+  map[normalized] = token;
+
+  const keys = Object.keys(map);
+  if (keys.length > MAX_STORED_STUDENT_IDENTITIES) {
+    delete map[keys[0]];
+  }
+
+  saveStudentTokenMap(map);
+  return token;
 }
 
 function loadSession(storageKey, exam, autoStart) {
@@ -393,6 +508,71 @@ function buildReportRows(questions, session) {
       correct: !!selectedAnswer && selectedAnswer === correctAnswer,
     };
   });
+}
+
+function buildResultsPayload(exam, questions, session, score, studentId, questionTimeMs, submissionId, token) {
+  const imageTimeUsed = Math.max(0, exam.durationMinutes * 60 - session.remainingSeconds);
+  const writtenTimeUsed = exam.writtenSectionMinutes > 0
+    ? Math.max(0, exam.writtenSectionMinutes * 60 - session.writtenSectionRemainingSeconds)
+    : 0;
+
+  return {
+    token,
+    submissionId,
+    examId: exam.id,
+    examTitle: exam.title,
+    studentId: (studentId || "").trim() || "Unknown student",
+    submittedAtIso: new Date().toISOString(),
+    score,
+    totalQuestions: questions.length,
+    scorePercent: questions.length ? Math.round((score / questions.length) * 1000) / 10 : 0,
+    totalTimeSeconds: imageTimeUsed + writtenTimeUsed,
+    questions: questions.map((question) => {
+      const selected = session.answers[question.id] || null;
+      return {
+        questionId: getQuestionDisplayId(question),
+        selected,
+        correct: question.correct || "",
+        isCorrect: !!selected && selected === question.correct,
+        flagged: !!session.flagged[question.id],
+        timeSeconds: Math.round((questionTimeMs[question.id] || 0) / 1000),
+      };
+    }),
+  };
+}
+
+// This posts to a same-origin Netlify Function, not directly to Google
+// Apps Script — see SUBMIT_RESULTS_PATH. That's a normal same-origin
+// fetch (no "no-cors" needed), so unlike the old direct-to-Apps-Script
+// design, the response body here is real: onDelivered only fires when the
+// backend actually confirms `{ ok: true }`. Anything else (a network
+// failure, an HTTP error, or an explicit `{ ok: false }` from the backend)
+// is treated as not-yet-delivered, so the caller can safely retry on the
+// next page load — the backend de-dupes by submissionId, so a retry after
+// an already-successful send is a harmless no-op.
+function sendResultsToBackend(exam, questions, session, score, studentId, questionTimeMs, submissionId, token, onDelivered) {
+  if (!exam.resultsEnabled) return;
+
+  const payload = buildResultsPayload(exam, questions, session, score, studentId, questionTimeMs, submissionId, token);
+
+  fetch(SUBMIT_RESULTS_PATH, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then((response) => response.json().catch(() => ({ ok: false })).then((data) => ({ response, data })))
+    .then(({ response, data }) => {
+      if (response.ok && data && data.ok) {
+        if (typeof onDelivered === "function") onDelivered();
+      }
+      // Any other outcome (HTTP error, ok:false, unparseable body) is left
+      // as "pending" — see the comment above.
+    })
+    .catch(() => {
+      // Logging is best-effort. A network hiccup should never block a
+      // student from finishing their exam; leaving resultsStatus as
+      // "pending" means the next load retries automatically.
+    });
 }
 
 function buildReportTable(title, rows, emptyText) {
@@ -646,6 +826,22 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   const [copyReadyAutoState, setCopyReadyAutoState] = useState("idle");
   const [reportState, setReportState] = useState("idle");
   const [confirmWrittenFinish, setConfirmWrittenFinish] = useState(false);
+  const [studentId, setStudentId] = useState(() => {
+    try {
+      return localStorage.getItem(STUDENT_ID_STORAGE_KEY) || "";
+    } catch {
+      return "";
+    }
+  });
+  const [resultsHistory, setResultsHistory] = useState({ status: "idle", data: null, error: "" });
+  const [resultsPanelOpen, setResultsPanelOpen] = useState(false);
+  const questionTimeMsRef = React.useRef({});
+  const activeQuestionRef = React.useRef({ id: null, enteredAt: null });
+  // Guards against firing a second send attempt within the same page load
+  // (e.g. from the effect re-running when resultsStatus flips to "pending").
+  // It intentionally does NOT persist across reloads, so a "pending" status
+  // found on a fresh load is retried exactly once per load.
+  const sendAttemptedRef = React.useRef(false);
   const adminMode = exam.adminResetToken && getAdminTokenFromUrl() === exam.adminResetToken;
   const displayedLaunchUrl = useMemo(
     () => (adminMode ? launchUrl : buildStudentLaunchUrl()),
@@ -676,7 +872,15 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }, [exam.title, exam.description]);
 
   useEffect(() => {
-    setSession(loadSession(storageKey, exam, urlHasAutoStart()));
+    const loaded = loadSession(storageKey, exam, urlHasAutoStart());
+    setSession(loaded);
+    // Seed the in-memory timing cache from whatever was already persisted,
+    // so a reload continues accumulating instead of losing prior time.
+    questionTimeMsRef.current = { ...loaded.questionTimeMs };
+    activeQuestionRef.current = { id: null, enteredAt: null };
+    sendAttemptedRef.current = false;
+    setResultsHistory({ status: "idle", data: null, error: "" });
+    setResultsPanelOpen(false);
     setActiveWarning(null);
     setCopyState("idle");
     setCopyReadyState("idle");
@@ -688,6 +892,180 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   useEffect(() => {
     saveSession(storageKey, session);
   }, [storageKey, session]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STUDENT_ID_STORAGE_KEY, studentId || "");
+    } catch {
+      // Ignore storage failures.
+    }
+  }, [studentId]);
+
+  // Tracks how long the student spends on each question. Runs a small
+  // internal clock keyed off the currently visible question id; whenever
+  // that changes (navigation, the tab going to the background, or the exam
+  // finishing) it banks the elapsed time against the question that was
+  // active, both into the fast in-memory ref and into the persisted
+  // session so a page reload doesn't lose it.
+  function recordElapsedForActiveQuestion() {
+    const active = activeQuestionRef.current;
+    if (!active.id || !active.enteredAt) return;
+    const elapsedMs = Date.now() - active.enteredAt;
+    if (elapsedMs <= 0) return;
+    const questionId = active.id;
+    questionTimeMsRef.current[questionId] = (questionTimeMsRef.current[questionId] || 0) + elapsedMs;
+    setSession((previous) => ({
+      ...previous,
+      questionTimeMs: {
+        ...previous.questionTimeMs,
+        [questionId]: (previous.questionTimeMs[questionId] || 0) + elapsedMs,
+      },
+    }));
+  }
+
+  useEffect(() => {
+    if (!session.started || session.submitted || session.writtenSectionActive || resultsPanelOpen) {
+      recordElapsedForActiveQuestion();
+      activeQuestionRef.current = { id: null, enteredAt: null };
+      return;
+    }
+
+    recordElapsedForActiveQuestion();
+    const activeId = questions[session.currentIndex] ? questions[session.currentIndex].id : null;
+    activeQuestionRef.current = { id: activeId, enteredAt: Date.now() };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.currentIndex, session.started, session.submitted, session.writtenSectionActive, resultsPanelOpen]);
+
+  // Pause the per-question clock while the tab is hidden so time spent in
+  // another tab/app isn't attributed to whichever question was on screen
+  // when the student tabbed away.
+  useEffect(() => {
+    if (typeof document === "undefined") return undefined;
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        recordElapsedForActiveQuestion();
+        if (activeQuestionRef.current.id) {
+          activeQuestionRef.current = { ...activeQuestionRef.current, enteredAt: null };
+        }
+      } else if (activeQuestionRef.current.id && !activeQuestionRef.current.enteredAt) {
+        activeQuestionRef.current = { ...activeQuestionRef.current, enteredAt: Date.now() };
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Last-resort checkpoint: if the tab is closed or hard-reloaded before
+  // the periodic navigation/visibility checkpoints above catch it, flush
+  // the in-progress question's elapsed time straight to localStorage. This
+  // writes directly (bypassing setSession/React) because there's no
+  // guarantee a state update scheduled during pagehide/beforeunload gets a
+  // chance to render before the page actually unloads.
+  useEffect(() => {
+    function flushTimingToStorage() {
+      const active = activeQuestionRef.current;
+      if (active.id && active.enteredAt) {
+        const elapsedMs = Date.now() - active.enteredAt;
+        if (elapsedMs > 0) {
+          questionTimeMsRef.current[active.id] = (questionTimeMsRef.current[active.id] || 0) + elapsedMs;
+        }
+        // Both "pagehide" and "beforeunload" can fire for the same
+        // navigation. Clearing enteredAt here means a second call banks
+        // zero additional time instead of re-counting the same interval.
+        activeQuestionRef.current = { ...active, enteredAt: null };
+      }
+      try {
+        const raw = localStorage.getItem(storageKey);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (parsed && typeof parsed === "object") {
+          parsed.questionTimeMs = { ...questionTimeMsRef.current };
+          localStorage.setItem(storageKey, JSON.stringify(parsed));
+        }
+      } catch {
+        // Best effort only.
+      }
+    }
+
+    // "pagehide" doesn't always mean the page is gone for good — e.g. a
+    // bfcache navigation can restore the exact same page later via
+    // "pageshow" without re-running this component's mount effect. Resume
+    // the clock in that case so the pause above doesn't stall it forever.
+    function handlePageShow() {
+      if (typeof document !== "undefined" && document.hidden) return;
+      const active = activeQuestionRef.current;
+      if (active.id && !active.enteredAt) {
+        activeQuestionRef.current = { ...active, enteredAt: Date.now() };
+      }
+    }
+
+    window.addEventListener("pagehide", flushTimingToStorage);
+    window.addEventListener("beforeunload", flushTimingToStorage);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pagehide", flushTimingToStorage);
+      window.removeEventListener("beforeunload", flushTimingToStorage);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [storageKey]);
+
+  // Lock in this attempt's access token and submissionId as soon as the
+  // exam actually starts (rather than waiting until submit), storing both
+  // directly on the session — not in separate component state — and
+  // persisting immediately. Both read whatever name/email was typed right
+  // before "Start Exam" was clicked.
+  //
+  // Storing the token on the session (scoped to this specific attempt,
+  // reset whenever a new attempt is created) rather than in a shared
+  // "current token" variable is deliberate: a shared variable can go stale
+  // if some other action — like checking "my past results" for a
+  // different typed name before ever starting — set it first, and then
+  // silently reused for an unrelated attempt under a different identity.
+  // Session-scoped state can't leak across identities that way.
+  useEffect(() => {
+    if (!exam.resultsEnabled) return;
+    if (!session.started) return;
+    setSession((previous) => {
+      if (previous.token && previous.submissionId) return previous;
+      return {
+        ...previous,
+        token: previous.token || loadOrCreateStudentToken(studentId),
+        submissionId: previous.submissionId || generateId("sub"),
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exam.resultsEnabled, session.started]);
+
+  useEffect(() => {
+    if (!exam.resultsEnabled) return;
+    if (!session.submitted || session.resultsStatus === "sent") return;
+    // Only attempt once per page load. If resultsStatus is already
+    // "pending" here, it's a leftover from a previous load whose fetch
+    // never confirmed (tab closed, network dropped) — retrying is safe
+    // because the backend de-dupes by submissionId.
+    if (sendAttemptedRef.current) return;
+    sendAttemptedRef.current = true;
+
+    recordElapsedForActiveQuestion();
+    const submissionId = session.submissionId || generateId("sub");
+    // Falls back to computing fresh only in the unlikely case submission
+    // happened before the lock-in effect above ever ran; the normal path
+    // is that session.token was already set when the exam started.
+    const token = session.token || loadOrCreateStudentToken(studentId);
+    const timeSnapshot = { ...questionTimeMsRef.current };
+    setSession((previous) => ({
+      ...previous,
+      submissionId: previous.submissionId || submissionId,
+      token: previous.token || token,
+      resultsStatus: "pending",
+    }));
+    sendResultsToBackend(exam, questions, session, score, studentId, timeSnapshot, submissionId, token, () => {
+      setSession((previous) => ({ ...previous, resultsStatus: "sent" }));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.submitted, session.resultsStatus]);
 
   useEffect(() => {
     if (!startAuthorized && session.started && !session.submitted) {
@@ -817,6 +1195,64 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     updateSession((previous) => ({ ...previous, started: true, reviewOpen: false }));
   }
 
+  // Lets a student see their own history (across every exam, not just this
+  // one) before or after taking one, using whatever name/email is
+  // currently typed. This reuses that identity's token the same way
+  // starting an exam does (see loadOrCreateStudentToken), so looking this
+  // up and then starting an exam under the same name resolve to the same
+  // student record.
+  //
+  // Deliberately local to this call, not written into any shared/session
+  // state: this can be used to peek at a *different* identity's history
+  // than whatever the student goes on to start an exam as (e.g. checking
+  // one fake test identity, then typing a different one and starting for
+  // real), and only the session's own locked-in token — set when an
+  // attempt actually starts — should ever determine which identity a
+  // submission is filed under.
+  function fetchResultsHistory() {
+    if (!exam.resultsEnabled) return;
+    if (!studentId.trim()) {
+      setResultsHistory({ status: "error", data: null, error: "Enter your name or email first." });
+      return;
+    }
+    const token = loadOrCreateStudentToken(studentId);
+    setResultsHistory({ status: "loading", data: null, error: "" });
+
+    fetch(GET_RESULTS_PATH, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+      .then((response) => response.json().catch(() => null).then((data) => ({ response, data })))
+      .then(({ response, data }) => {
+        if (response.ok && data && data.ok) {
+          setResultsHistory({ status: "loaded", data: data.results, error: "" });
+        } else {
+          setResultsHistory({
+            status: "error",
+            data: null,
+            error: (data && data.error) || "Could not load your results right now.",
+          });
+        }
+      })
+      .catch(() => {
+        setResultsHistory({ status: "error", data: null, error: "Could not reach the results backend." });
+      });
+  }
+
+  function openResultsPanel() {
+    setResultsPanelOpen(true);
+    if (studentId.trim()) {
+      fetchResultsHistory();
+    } else {
+      setResultsHistory({ status: "idle", data: null, error: "" });
+    }
+  }
+
+  function closeResultsPanel() {
+    setResultsPanelOpen(false);
+  }
+
   function selectOption(questionId, optionId) {
     if (session.submitted || session.writtenSectionActive || !startAuthorized) return;
     updateSession((previous) => ({
@@ -892,6 +1328,12 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     } catch {
       // Ignore storage failures.
     }
+    // Clear per-attempt timing/send state too, or a fresh attempt would
+    // inherit stale elapsed time (and a stale "already sending" guard)
+    // from whatever attempt was just cleared.
+    questionTimeMsRef.current = {};
+    activeQuestionRef.current = { id: null, enteredAt: null };
+    sendAttemptedRef.current = false;
     setActiveWarning(null);
     setCopyState("idle");
     setReportState("idle");
@@ -1012,6 +1454,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   const resultsList = session.postExamFilter === "flagged" ? flaggedQuestions : questions;
+  const identityLocked = session.started && !session.submitted;
 
   return React.createElement(
     "div",
@@ -1036,6 +1479,149 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               className: "mt-5 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700",
             },
             "Continue Exam"
+          )
+        )
+      ),
+    exam.resultsEnabled &&
+      React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: openResultsPanel,
+          className:
+            "fixed bottom-4 right-4 z-40 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-white/20 hover:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-300",
+        },
+        "Past Results"
+      ),
+    resultsPanelOpen &&
+      React.createElement(
+        "div",
+        {
+          className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-labelledby": "past-results-title",
+        },
+        React.createElement(
+          "div",
+          { className: "max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-200" },
+          React.createElement(
+            "div",
+            { className: "flex items-start justify-between gap-4" },
+            React.createElement(
+              "div",
+              null,
+              React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Student history"),
+              React.createElement("h2", { id: "past-results-title", className: "mt-1 text-2xl font-bold tracking-tight" }, "Past Results"),
+              React.createElement(
+                "p",
+                { className: "mt-2 text-sm leading-6 text-slate-600" },
+                "View attempts saved for this identity on this browser."
+              )
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: closeResultsPanel,
+                className: "rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50",
+              },
+              "Close"
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-6" },
+            React.createElement(
+              "label",
+              { className: "block text-sm font-medium text-slate-700", htmlFor: "results-student-id-input" },
+              "Your name or email"
+            ),
+            React.createElement("input", {
+              id: "results-student-id-input",
+              type: "text",
+              value: studentId,
+              disabled: identityLocked,
+              onChange: (event) => {
+                setStudentId(event.target.value);
+                setResultsHistory({ status: "idle", data: null, error: "" });
+              },
+              placeholder: "e.g. Jordan Lee or jordan@email.com",
+              className:
+                "mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500",
+            }),
+            identityLocked &&
+              React.createElement(
+                "p",
+                { className: "mt-2 text-xs leading-5 text-slate-500" },
+                "This identity is locked until the current attempt is submitted. The exam timer continues while this panel is open."
+              ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: fetchResultsHistory,
+                disabled: resultsHistory.status === "loading",
+                className:
+                  "mt-4 rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-400",
+              },
+              resultsHistory.status === "loading" ? "Loading results..." : "Load past results"
+            ),
+            resultsHistory.status === "error" &&
+              React.createElement("p", { className: "mt-3 text-sm text-rose-700" }, resultsHistory.error),
+            resultsHistory.status === "loaded" &&
+              React.createElement(
+                "div",
+                { className: "mt-5 overflow-hidden rounded-2xl border border-slate-200" },
+                resultsHistory.data.attempts.length === 0
+                  ? React.createElement(
+                      "p",
+                      { className: "p-4 text-sm text-slate-600" },
+                      "No past attempts found yet for this name/email."
+                    )
+                  : React.createElement(
+                      "div",
+                      { className: "overflow-x-auto" },
+                      React.createElement(
+                        "table",
+                        { className: "w-full min-w-[520px] text-left text-sm" },
+                        React.createElement(
+                          "thead",
+                          { className: "bg-slate-50 text-xs uppercase tracking-wide text-slate-500" },
+                          React.createElement(
+                            "tr",
+                            null,
+                            React.createElement("th", { className: "px-4 py-3" }, "Exam"),
+                            React.createElement("th", { className: "px-4 py-3" }, "Score"),
+                            React.createElement("th", { className: "px-4 py-3" }, "Date")
+                          )
+                        ),
+                        React.createElement(
+                          "tbody",
+                          null,
+                          ...[...resultsHistory.data.attempts]
+                            .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp))
+                            .map((attempt, index) =>
+                              React.createElement(
+                                "tr",
+                                { key: index, className: "border-t border-slate-200" },
+                                React.createElement("td", { className: "px-4 py-3" }, attempt["Exam Title"]),
+                                React.createElement(
+                                  "td",
+                                  { className: "px-4 py-3 font-medium" },
+                                  `${attempt["Score"]}/${attempt["Total Questions"]} (${attempt["Score Percent"]}%)`
+                                ),
+                                React.createElement(
+                                  "td",
+                                  { className: "px-4 py-3 text-slate-600" },
+                                  attempt["Timestamp"] ? new Date(attempt["Timestamp"]).toLocaleString() : ""
+                                )
+                              )
+                            )
+                        )
+                      )
+                    )
+              )
           )
         )
       ),
@@ -1329,9 +1915,37 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Answered, unanswered, and flagged status")
                 )
               ),
+              exam.resultsEnabled &&
+                React.createElement(
+                  "div",
+                  { className: "mt-8" },
+                  React.createElement(
+                    "label",
+                    { className: "block text-sm font-medium text-slate-700", htmlFor: "student-id-input" },
+                    "Your name or email (used to label your results)"
+                  ),
+                  React.createElement("input", {
+                    id: "student-id-input",
+                    type: "text",
+                    value: studentId,
+                    onChange: (event) => setStudentId(event.target.value),
+                    placeholder: "e.g. Jordan Lee or jordan@email.com",
+                    className:
+                      "mt-2 w-full max-w-sm rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm focus:border-slate-500 focus:outline-none",
+                  }),
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: openResultsPanel,
+                      className: "mt-3 text-sm font-medium text-slate-600 underline decoration-dotted hover:text-slate-900",
+                    },
+                    "Open past results"
+                  )
+                ),
               React.createElement(
                 "div",
-                { className: "mt-8 flex flex-wrap gap-3" },
+                { className: "mt-4 flex flex-wrap gap-3" },
                 React.createElement(
                   "button",
                   {

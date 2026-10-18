@@ -156,6 +156,7 @@ The app accepts a JSON manifest with this shape:
   "durationMinutes": 60,
   "adminResetToken": "replace-this-token",
   "startAccessToken": "replace-this-start-token",
+  "resultsEnabled": true,
   "warningThresholdsSeconds": [1800, 600, 120],
   "questions": [
     {
@@ -177,6 +178,7 @@ Fields:
 - `durationMinutes`: total exam time
 - `adminResetToken`: optional token that enables reset controls when passed as `?admin=...`
 - `startAccessToken`: optional token that keeps the public link locked until the released student link includes `?access=...`
+- `resultsEnabled`: optional boolean, defaults to `true`. When true, the start screen shows a name/email field and a "View my past results" link, and every submission is logged to your Google Sheet. Set to `false` to disable logging for a specific exam. There's no URL or secret to set here — see "Results logging" below.
 - `warningThresholdsSeconds`: optional warning popup times
 - `questions`: array of image-based questions
 - `promptImage`: main question image
@@ -185,6 +187,72 @@ Fields:
 - `correct`: one of `a`, `b`, `c`, or `d`
 
 For manifest-driven exams, use paths that are correct relative to the manifest file, such as `../assets/exam-1/q001-front.png`. Do not use local machine paths.
+
+## Results logging (Google Sheets as a backend)
+
+This app is static, but exam results still get logged automatically to a
+Google Sheet in your Drive, which acts as the permanent results database.
+This is a one-time setup you do yourself — students never see or configure
+any of it; they just take the exam.
+
+```
+Student's browser → Netlify Function → Google Apps Script → Google Sheet
+```
+
+How it works:
+- The name/email field and a "View my past results" link only appear on
+  exams with `resultsEnabled` set (defaults to `true`). If disabled for an
+  exam, that exam's start screen and behavior are unaffected by any of
+  this.
+- The first time a given name/email is used in a browser, the app
+  generates a private access token for that identity and remembers it
+  locally. That token (not the typed name) is what the backend uses to
+  scope reads/writes, so one student can't retrieve another's results.
+  Typing a different name/email gets a different token — handy for testing
+  with several fake student identities in one browser.
+- Per-question time is tracked as the student works and saved into their
+  local session as they go, so it survives an accidental reload; time
+  spent with the tab in the background isn't counted toward whichever
+  question was on screen.
+- The browser only ever talks to two same-origin Netlify Functions
+  (`/.netlify/functions/submit-results` and `/.netlify/functions/get-results`)
+  — never directly to Google. Those functions hold the real Apps Script URL
+  and a shared secret as server-side environment variables and relay
+  requests to it, which keeps both out of any file that ships to a
+  student's browser.
+- On submission, the app posts a JSON summary (score, total time, a
+  per-question breakdown, and a unique submission ID generated when the
+  attempt started). Because the Netlify Function makes a normal
+  server-to-server request, the app gets a real, honest success/failure
+  signal back — if it can't be confirmed as delivered, the next time that
+  results page loads it automatically retries, which is safe because the
+  backend recognizes the same submission ID and won't write it twice.
+- Apps Script appends rows to three tabs in your Sheet: `Students` (one row
+  per known access token), `Attempts` (one row per submission), and
+  `QuestionResults` (one row per question per submission, useful for
+  spotting which questions students miss most or spend the most time on).
+  Writes are de-duplicated and independently repaired per tab (see
+  SETUP.md) and locked to avoid collisions between simultaneous
+  submissions.
+- The Sheet lives in your own Drive. Share it with yourself or anyone else
+  the normal Google Sheets way to see full results. Students only ever see
+  their own data, through the app's "View my past results" link.
+
+Full setup walkthrough — creating the Sheet, deploying Apps Script, setting
+the Netlify environment variables, and how student identity/tokens work:
+`scripts/google-apps-script/SETUP.md`. The Apps Script itself lives at
+`scripts/google-apps-script/Code.gs`; the Netlify Functions live at
+`netlify/functions/submit-results.js` and `netlify/functions/get-results.js`.
+
+Logging is best-effort: if the backend can't be reached, the exam still
+runs normally — a logging hiccup never blocks a student from finishing or
+seeing their results.
+
+**Deferred for a later pass:** live in-progress tracking while a student is
+mid-exam, chapter/topic-level performance breakdowns, multi-exam trend
+charts, a review queue of missed/flagged questions, and instructor
+feedback comments. The current `Students`/`Attempts`/`QuestionResults`
+schema is designed so these can be layered on without another migration.
 
 ## Production notes
 
@@ -198,6 +266,7 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 - `manifests/exam-3.json` contains a separate 50-question Chapter 1 Version 3 subset shifted two source questions forward from Version 1.
 - `manifests/chapter-1-full.json` preserves the full 425-question import.
 - `manifests/gyn-comprehensive-v1.json` through `manifests/gyn-comprehensive-v5.json` split the full Chapter 1 bank into four 100-question exams and one 25-question exam.
+- `manifests/final-exam.json` contains the 100-question Final Exam: a mixed set from the Chapter 1 bank (about half picture and half described-cell questions) built to mirror the real exam.
 - `manifests/chapter-2-v1.json` contains the 48-question Chapter 2 Version 1 subset.
 - `manifests/chapter-2-full.json` preserves the full 144-question Chapter 2 import.
 - `manifests/chapter-4-v1.json` contains the 43-question Chapter 4 Version 1 subset.
@@ -211,24 +280,44 @@ For manifest-driven exams, use paths that are correct relative to the manifest f
 
 ## Netlify deployment
 
-If you deploy from a repo, `netlify.toml` belongs at the repo root. This project includes:
+If you deploy from a repo, `netlify.toml` belongs at the repo root. This
+repo now includes its own `netlify.toml` (at `practice_test_web_app_v2/netlify.toml`)
+alongside `_headers`. It's configured to:
+- publish `.` (this repo's root)
+- serve the two results-logging functions from `netlify/functions`
+- (headers/caching are handled separately by `_headers`)
 
-- `/Users/gallo/projects/Practice_test/netlify.toml`
-- `/Users/gallo/projects/Practice_test/practice_test_web_app_v2/_headers`
+**Important — check which `netlify.toml` your site actually uses.** Before
+this results-logging feature existed, this README documented a
+`netlify.toml` living one directory up, at `/Users/gallo/projects/Practice_test/netlify.toml`
+(outside this repo), configured to publish the `practice_test_web_app_v2`
+subdirectory. If your Netlify site's base directory is still set to that
+parent folder, Netlify will read *that* file, not the new one added here —
+in which case add this line to it yourself:
 
-It is configured to:
-- publish `practice_test_web_app_v2`
-- avoid aggressive caching on `index.html`, manifests, and JS
-- allow long caching on static assets
-- set `X-Robots-Tag` noindex on `index.html`
+```toml
+[build]
+  functions = "practice_test_web_app_v2/netlify/functions"
+```
+
+(adjust the path if your publish directory is already `practice_test_web_app_v2`,
+in which case `functions = "netlify/functions"` is correct as-is). If your
+Netlify site instead deploys straight from this repo (matches the git
+remote `practice_test_web_app_v2.git`), the `netlify.toml` now included
+here is exactly what you need with no changes.
 
 Deployment sequence:
 
 1. Replace the sample tokens and sample exam content.
 2. Add your real manifests and assets.
 3. Test locally with a real manifest.
-4. Deploy to Netlify.
-5. Smoke test the live public, admin, and released student links.
+4. If using results logging, follow `scripts/google-apps-script/SETUP.md`
+   and set the `APPS_SCRIPT_URL` / `RESULTS_SHARED_SECRET` environment
+   variables in Netlify (Site configuration > Environment variables).
+5. Deploy to Netlify.
+6. Smoke test the live public, admin, and released student links, and (if
+   logging is enabled) submit a test exam and confirm rows appear in the
+   Sheet.
 
 ## Current Chapter 1 Version 1 exam
 
