@@ -199,6 +199,9 @@ function normalizeExamManifest(manifest, sourceLabel, assetBaseUrl) {
     adminResetToken: manifest.adminResetToken ? String(manifest.adminResetToken) : "",
     startAccessToken: manifest.startAccessToken ? String(manifest.startAccessToken) : "",
     resultsEnabled: typeof manifest.resultsEnabled === "boolean" ? manifest.resultsEnabled : DEFAULT_RESULTS_ENABLED,
+    // Practice mode: the student submits each question and sees right/wrong
+    // plus the answer key image right away. Off unless the manifest sets it.
+    instantFeedback: manifest.instantFeedback === true,
     warningThresholds,
     questions,
   };
@@ -256,6 +259,8 @@ function createEmptySession(exam, autoStart) {
     currentIndex: 0,
     answers: {},
     flagged: {},
+    // Questions whose answer was submitted in instant-feedback mode (locked).
+    checked: {},
     remainingSeconds: exam.durationMinutes * 60,
     writtenSectionActive: false,
     writtenSectionRemainingSeconds: exam.writtenSectionMinutes * 60,
@@ -312,6 +317,15 @@ function sanitizeSession(rawSession, exam, autoStart) {
     });
   }
 
+  const checked = {};
+  if (rawSession.checked && typeof rawSession.checked === "object") {
+    Object.entries(rawSession.checked).forEach(([questionId, value]) => {
+      if (validIds.has(String(questionId)) && !!value && answers[String(questionId)]) {
+        checked[String(questionId)] = true;
+      }
+    });
+  }
+
   const maxIndex = Math.max(exam.questions.length - 1, 0);
   const currentIndex = Number.isInteger(rawSession.currentIndex)
     ? Math.min(Math.max(rawSession.currentIndex, 0), maxIndex)
@@ -339,6 +353,7 @@ function sanitizeSession(rawSession, exam, autoStart) {
     currentIndex,
     answers,
     flagged,
+    checked,
     remainingSeconds,
     writtenSectionActive,
     writtenSectionRemainingSeconds,
@@ -1255,10 +1270,21 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   function selectOption(questionId, optionId) {
     if (session.submitted || session.writtenSectionActive || !startAuthorized) return;
+    if (exam.instantFeedback && session.checked[questionId]) return;
     updateSession((previous) => ({
       ...previous,
       started: true,
       answers: { ...previous.answers, [questionId]: optionId },
+    }));
+  }
+
+  function checkAnswer(questionId) {
+    if (!exam.instantFeedback || session.submitted || !startAuthorized) return;
+    if (!session.answers[questionId]) return;
+    updateSession((previous) => ({
+      ...previous,
+      started: true,
+      checked: { ...previous.checked, [questionId]: true },
     }));
   }
 
@@ -1372,6 +1398,11 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     const flagged = !!session.flagged[question.id];
 
     if (isCurrent) return "border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-200";
+    if (exam.instantFeedback && session.checked[question.id]) {
+      return session.answers[question.id] === question.correct
+        ? "border-emerald-500 bg-emerald-200 text-emerald-950"
+        : "border-rose-500 bg-rose-200 text-rose-950";
+    }
     if (flagged && answered) return "border-amber-500 bg-amber-200 text-amber-950";
     if (flagged) return "border-rose-300 bg-rose-100 text-rose-900";
     if (answered) return "border-emerald-400 bg-emerald-100 text-emerald-900";
@@ -1380,8 +1411,9 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   function optionClass(optionId, question) {
     const selected = session.answers[question.id] === optionId;
+    const revealed = session.submitted || (exam.instantFeedback && session.checked[question.id]);
 
-    if (!session.submitted) {
+    if (!revealed) {
       return selected
         ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
         : "border-slate-300 bg-white hover:border-slate-400";
@@ -2327,7 +2359,9 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                       React.createElement(
                         "p",
                         { className: "mt-1 text-sm text-slate-600" },
-                        "Answer by clicking A, B, C, or D. The question content is shown only through images."
+                        exam.instantFeedback
+                          ? "Click A, B, C, or D, then Submit Answer to see if you got it right."
+                          : "Answer by clicking A, B, C, or D. The question content is shown only through images."
                       )
                     ),
                     React.createElement(
@@ -2367,11 +2401,61 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                           React.createElement(
                             "div",
                             { className: "mt-3 h-4 text-xs text-slate-500" },
-                            session.answers[currentQuestion.id] === optionId ? "Selected" : ""
+                            exam.instantFeedback && session.checked[currentQuestion.id]
+                              ? currentQuestion.correct === optionId
+                                ? "Correct answer"
+                                : session.answers[currentQuestion.id] === optionId
+                                ? "Your answer"
+                                : ""
+                              : session.answers[currentQuestion.id] === optionId
+                              ? "Selected"
+                              : ""
                           )
                         )
                       )
-                    )
+                    ),
+                    exam.instantFeedback &&
+                      !session.checked[currentQuestion.id] &&
+                      React.createElement(
+                        "button",
+                        {
+                          onClick: () => checkAnswer(currentQuestion.id),
+                          disabled: !session.answers[currentQuestion.id],
+                          className: session.answers[currentQuestion.id]
+                            ? "w-full rounded-2xl bg-blue-600 px-5 py-3 text-base font-semibold text-white hover:bg-blue-700"
+                            : "w-full cursor-not-allowed rounded-2xl bg-slate-200 px-5 py-3 text-base font-semibold text-slate-500",
+                        },
+                        session.answers[currentQuestion.id] ? "Submit Answer" : "Pick an answer, then submit"
+                      ),
+                    exam.instantFeedback &&
+                      session.checked[currentQuestion.id] &&
+                      React.createElement(
+                        "div",
+                        { className: "space-y-4" },
+                        session.answers[currentQuestion.id] === currentQuestion.correct
+                          ? React.createElement(
+                              "div",
+                              { className: "rounded-2xl border border-emerald-400 bg-emerald-50 px-5 py-4 text-lg font-semibold text-emerald-900" },
+                              `Correct! The answer is ${String(currentQuestion.correct).toUpperCase()}.`
+                            )
+                          : React.createElement(
+                              "div",
+                              { className: "rounded-2xl border border-rose-400 bg-rose-50 px-5 py-4 text-lg font-semibold text-rose-900" },
+                              `Incorrect. You picked ${String(session.answers[currentQuestion.id]).toUpperCase()}. The answer is ${String(
+                                currentQuestion.correct
+                              ).toUpperCase()}.`
+                            ),
+                        currentQuestion.answerKeyImage &&
+                          React.createElement(
+                            "div",
+                            null,
+                            React.createElement("h3", { className: "mb-2 text-lg font-semibold" }, "Answer Explanation"),
+                            React.createElement(QuestionImage, {
+                              src: currentQuestion.answerKeyImage,
+                              alt: `Question ${currentQuestion.id} answer key`,
+                            })
+                          )
+                      )
                   ),
                   React.createElement(
                     "div",
