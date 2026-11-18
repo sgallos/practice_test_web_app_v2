@@ -421,12 +421,24 @@ function saveStudentTokenMap(map) {
 // with a few fake student accounts — never overwrites or loses access to
 // an earlier one's history the way a single stored {studentId, token}
 // pair would.
-function loadOrCreateStudentToken(studentId) {
-  const normalized = (studentId || "").trim();
+// One student uses this site, so the token is per browser, not per typed
+// name: a typo or a different spelling must not split his history, and
+// Past Results must work without typing anything. The name is only a label.
+const BROWSER_TOKEN_KEY = "*";
+
+function loadOrCreateStudentToken() {
+  const normalized = BROWSER_TOKEN_KEY;
   const map = loadStudentTokenMap();
 
   if (typeof map[normalized] === "string" && map[normalized]) {
     return map[normalized];
+  }
+  // Keep a history this browser already has under an older per-name token.
+  const existing = Object.values(map).find((value) => typeof value === "string" && value);
+  if (existing) {
+    map[normalized] = existing;
+    saveStudentTokenMap(map);
+    return existing;
   }
 
   const token = generateId("tok");
@@ -1236,11 +1248,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   // submission is filed under.
   function fetchResultsHistory() {
     if (!exam.resultsEnabled) return;
-    if (!studentId.trim()) {
-      setResultsHistory({ status: "error", data: null, error: "Enter your name or email first." });
-      return;
-    }
-    const token = loadOrCreateStudentToken(studentId);
+    const token = loadOrCreateStudentToken();
     setResultsHistory({ status: "loading", data: null, error: "" });
 
     fetch(GET_RESULTS_PATH, {
@@ -1267,11 +1275,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   function openResultsPanel() {
     setResultsPanelOpen(true);
-    if (studentId.trim()) {
-      fetchResultsHistory();
-    } else {
-      setResultsHistory({ status: "idle", data: null, error: "" });
-    }
+    fetchResultsHistory();
   }
 
   function closeResultsPanel() {
@@ -1517,7 +1521,6 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
   }
 
   const resultsList = session.postExamFilter === "flagged" ? flaggedQuestions : questions;
-  const identityLocked = session.started && !session.submitted;
 
   return React.createElement(
     "div",
@@ -1579,7 +1582,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               React.createElement(
                 "p",
                 { className: "mt-2 text-sm leading-6 text-slate-600" },
-                "View attempts saved for this identity on this browser."
+                "Every attempt taken on this computer and browser, newest first."
               )
             ),
             React.createElement(
@@ -1596,30 +1599,6 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             "div",
             { className: "mt-6" },
             React.createElement(
-              "label",
-              { className: "block text-sm font-medium text-slate-700", htmlFor: "results-student-id-input" },
-              "Your name or email"
-            ),
-            React.createElement("input", {
-              id: "results-student-id-input",
-              type: "text",
-              value: studentId,
-              disabled: identityLocked,
-              onChange: (event) => {
-                setStudentId(event.target.value);
-                setResultsHistory({ status: "idle", data: null, error: "" });
-              },
-              placeholder: "e.g. Jordan Lee or jordan@email.com",
-              className:
-                "mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500",
-            }),
-            identityLocked &&
-              React.createElement(
-                "p",
-                { className: "mt-2 text-xs leading-5 text-slate-500" },
-                "This identity is locked until the current attempt is submitted. The exam timer continues while this panel is open."
-              ),
-            React.createElement(
               "button",
               {
                 type: "button",
@@ -1628,7 +1607,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 className:
                   "mt-4 rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-400",
               },
-              resultsHistory.status === "loading" ? "Loading results..." : "Load past results"
+              resultsHistory.status === "loading" ? "Loading results..." : "Refresh"
             ),
             resultsHistory.status === "error" &&
               React.createElement("p", { className: "mt-3 text-sm text-rose-700" }, resultsHistory.error),
@@ -1640,7 +1619,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   ? React.createElement(
                       "p",
                       { className: "p-4 text-sm text-slate-600" },
-                      "No past attempts found yet for this name/email."
+                      "No finished attempts on this computer yet."
                     )
                   : React.createElement(
                       "div",
@@ -1985,7 +1964,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   React.createElement(
                     "label",
                     { className: "block text-sm font-medium text-slate-700", htmlFor: "student-id-input" },
-                    "Your name or email (used to label your results)"
+                    "Your name (optional, just labels your results)"
                   ),
                   React.createElement("input", {
                     id: "student-id-input",
