@@ -202,6 +202,8 @@ function normalizeExamManifest(manifest, sourceLabel, assetBaseUrl) {
     // Practice mode: the student submits each question and sees right/wrong
     // plus the answer key image right away. Off unless the manifest sets it.
     instantFeedback: manifest.instantFeedback === true,
+    // No countdown: the exam never runs out of time. Off unless the manifest sets it.
+    untimed: manifest.untimed === true,
     warningThresholds,
     questions,
   };
@@ -1091,6 +1093,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   useEffect(() => {
     if (!startAuthorized || !session.started || session.submitted) return undefined;
+    if (exam.untimed) return undefined;
     if (currentPhaseRemainingSeconds <= 0) {
       setSession((previous) => {
         if (previous.submitted) return previous;
@@ -1711,7 +1714,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 "div",
                 { className: "mt-4 flex flex-wrap gap-2 text-xs text-slate-500" },
                 React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `${questions.length} questions`),
-              React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `${totalExamMinutes} minutes total`),
+              React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, exam.untimed ? "No time limit" : `${totalExamMinutes} minutes total`),
               React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `v${exam.version}`),
               manifestUrl && React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, "Custom manifest"),
               urlHasAutoStart() && React.createElement("span", { className: "rounded-full bg-blue-100 px-3 py-1 text-blue-900" }, "Auto-start link"),
@@ -1851,7 +1854,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
               "div",
               { className: "flex flex-wrap gap-3" },
               React.createElement(StatusPill, { label: "Phase", value: currentPhaseLabel }),
-              React.createElement(StatusPill, { label: "Time", value: formatTime(currentPhaseRemainingSeconds) }),
+              React.createElement(StatusPill, { label: "Time", value: exam.untimed ? "Untimed" : formatTime(currentPhaseRemainingSeconds) }),
               React.createElement(StatusPill, { label: "Answered", value: `${answeredCount}/${questions.length}` }),
               React.createElement(StatusPill, { label: "Flagged", value: String(flaggedCount) })
             )
@@ -1905,7 +1908,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             React.createElement(
               "div",
               { className: "rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-slate-200" },
-              React.createElement("h2", { className: "text-2xl font-semibold tracking-tight text-slate-950" }, "Timed exam flow"),
+              React.createElement("h2", { className: "text-2xl font-semibold tracking-tight text-slate-950" }, exam.untimed ? "Exam flow" : "Timed exam flow"),
               React.createElement(
                 "p",
                 { className: "mt-3 text-sm leading-6 text-slate-600" },
@@ -1931,8 +1934,8 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                 React.createElement(
                   "div",
                   { className: "rounded-3xl border border-slate-200 bg-slate-50 p-5" },
-                  React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, formatDurationMinutes(totalExamMinutes)),
-                  React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Total time")
+                  React.createElement("div", { className: "text-3xl font-bold tracking-tight" }, exam.untimed ? "None" : formatDurationMinutes(totalExamMinutes)),
+                  React.createElement("div", { className: "mt-2 text-sm text-slate-600" }, "Time limit")
                 ),
                 React.createElement(
                   "div",
@@ -2011,11 +2014,13 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                     ? `You will have ${formatDurationMinutes(exam.durationMinutes)} for ${questions.length} online questions, followed by ${formatDurationMinutes(
                         exam.writtenSectionMinutes
                       )} for ${exam.writtenSectionLabel}.`
+                    : exam.untimed
+                    ? `There is no time limit for these ${questions.length} questions. You can close the page and come back later on the same computer and browser, and your answers will still be there.`
                     : `You will have ${formatDurationMinutes(exam.durationMinutes)} to complete ${questions.length} questions once the exam begins.`
                 ),
                 React.createElement("li", null, "Answer each question by selecting A, B, C, or D."),
                 React.createElement("li", null, "Use the flag button to mark questions you want to revisit before submitting."),
-                React.createElement("li", null, "You will receive time warnings when 30 minutes, 10 minutes, and 5 minutes remain."),
+                exam.untimed ? null : React.createElement("li", null, "You will receive time warnings when 30 minutes, 10 minutes, and 5 minutes remain."),
                 React.createElement("li", null, "The final review screen becomes available when you reach the last question."),
                 React.createElement(
                   "li",

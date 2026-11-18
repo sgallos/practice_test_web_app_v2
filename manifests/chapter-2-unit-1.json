@@ -395,5 +395,6 @@
       "answerKeyImage": "../assets/chapter-2/back_ans__page_012_q126_c.png",
       "correct": "c"
     }
-  ]
+  ],
+  "untimed": true
 }
