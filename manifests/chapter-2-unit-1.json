@@ -396,5 +396,6 @@
       "correct": "c"
     }
   ],
-  "untimed": true
+  "untimed": true,
+  "allowRetake": true
 }

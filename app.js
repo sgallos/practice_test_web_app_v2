@@ -204,6 +204,9 @@ function normalizeExamManifest(manifest, sourceLabel, assetBaseUrl) {
     instantFeedback: manifest.instantFeedback === true,
     // No countdown: the exam never runs out of time. Off unless the manifest sets it.
     untimed: manifest.untimed === true,
+    // Lets the student clear a finished attempt and start fresh from the
+    // results screen. Off unless the manifest sets it.
+    allowRetake: manifest.allowRetake === true,
     warningThresholds,
     questions,
   };
@@ -468,7 +471,7 @@ function StatusPill({ label, value }) {
   );
 }
 
-function QuestionImage({ src, alt }) {
+function QuestionImage({ src, alt, maxHeight }) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -495,6 +498,7 @@ function QuestionImage({ src, alt }) {
     src,
     alt,
     onError: () => setFailed(true),
+    style: maxHeight ? { maxHeight, objectFit: "contain" } : undefined,
     className: "w-full rounded-3xl border border-slate-200 bg-white shadow-sm",
   });
 }
@@ -1198,6 +1202,9 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   const questions = exam.questions;
   const currentQuestion = questions[session.currentIndex];
+  // Practice exams get a tighter layout once started: small header, capped
+  // picture height, compact navigator, auto-scroll to the feedback.
+  const practiceLayout = exam.instantFeedback && session.started && !adminMode;
   const flaggedQuestions = questions.filter((question) => !!session.flagged[question.id]);
   const answeredCount = questions.filter((question) => !!session.answers[question.id]).length;
   const flaggedCount = flaggedQuestions.length;
@@ -1289,6 +1296,18 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
       started: true,
       checked: { ...previous.checked, [questionId]: true },
     }));
+    // Bring the right/wrong banner and explanation into view.
+    window.setTimeout(() => {
+      const el = document.getElementById("practice-feedback");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }
+
+  function scrollToQuestionTop() {
+    window.setTimeout(() => {
+      const el = document.getElementById("question-card");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 30);
   }
 
   function toggleFlag(questionId) {
@@ -1312,10 +1331,12 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
 
   function nextQuestion() {
     goToQuestion(session.currentIndex + 1);
+    if (exam.instantFeedback) scrollToQuestionTop();
   }
 
   function previousQuestion() {
     goToQuestion(session.currentIndex - 1);
+    if (exam.instantFeedback) scrollToQuestionTop();
   }
 
   function openReview() {
@@ -1368,6 +1389,13 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
     setReportState("idle");
     setConfirmWrittenFinish(false);
     setSession(createEmptySession(exam, false));
+  }
+
+  function startOver() {
+    const ok = window.confirm(
+      "Start the exam over? Your answers on this computer will be cleared. Your score from this attempt is already saved for your instructor."
+    );
+    if (ok) resetExam();
   }
 
   function openPrintableReport() {
@@ -1700,7 +1728,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
       { className: "mx-auto max-w-7xl p-4 md:p-6" },
       React.createElement(
         "div",
-        { className: "mb-6 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200" },
+        { className: `rounded-[2rem] bg-white shadow-sm ring-1 ring-slate-200 ${practiceLayout ? "mb-4 px-6 py-3" : "mb-6 p-6"}` },
         React.createElement(
           "div",
           { className: "flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between" },
@@ -1708,9 +1736,9 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             "div",
             { className: "max-w-3xl" },
             React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, sourceLabel),
-            React.createElement("h1", { className: "mt-2 text-3xl font-bold tracking-tight text-slate-950" }, exam.title),
-            React.createElement("p", { className: "mt-2 text-sm leading-6 text-slate-600" }, exam.description),
-              React.createElement(
+            React.createElement("h1", { className: `${practiceLayout ? "mt-1 text-xl" : "mt-2 text-3xl"} font-bold tracking-tight text-slate-950` }, exam.title),
+            !practiceLayout && React.createElement("p", { className: "mt-2 text-sm leading-6 text-slate-600" }, exam.description),
+              !practiceLayout && React.createElement(
                 "div",
                 { className: "mt-4 flex flex-wrap gap-2 text-xs text-slate-500" },
                 React.createElement("span", { className: "rounded-full bg-slate-100 px-3 py-1" }, `${questions.length} questions`),
@@ -1734,7 +1762,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
           React.createElement(
             "div",
             { className: "flex w-full max-w-xl flex-col gap-3" },
-            React.createElement(
+            !practiceLayout && React.createElement(
               "div",
               { className: "rounded-3xl border border-slate-200 bg-slate-50 p-4" },
               React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Launch link"),
@@ -2172,6 +2200,33 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                     "The report window was blocked. Allow popups for this site, then try again."
                   )
               ),
+              exam.allowRetake &&
+                React.createElement(
+                  "div",
+                  { className: "mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4" },
+                  React.createElement("div", { className: "text-xs font-semibold uppercase tracking-[0.2em] text-slate-500" }, "Try again"),
+                  React.createElement(
+                    "p",
+                    { className: "mt-2 text-sm leading-6 text-slate-600" },
+                    "Clear your answers and take this exam again from the start."
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: startOver,
+                      disabled: exam.resultsEnabled && session.resultsStatus !== "sent",
+                      className: "mt-3 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50",
+                    },
+                    "Start over"
+                  ),
+                  // Don't let a retake wipe an attempt whose results never reached the sheet.
+                  exam.resultsEnabled && session.resultsStatus !== "sent" &&
+                    React.createElement(
+                      "p",
+                      { className: "mt-2 text-xs leading-5 text-slate-600" },
+                      "Saving your results first. If this doesn't go away, check your internet connection and reload the page."
+                    )
+                ),
               React.createElement(
                 "div",
                 { className: "mt-5 flex flex-col gap-2" },
@@ -2323,19 +2378,28 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             { className: "grid gap-6 lg:grid-cols-[300px,1fr]" },
             React.createElement(
               "div",
-              { className: "rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200" },
-              React.createElement("h2", { className: "text-xl font-semibold tracking-tight" }, "Navigator"),
-              React.createElement("p", { className: "mt-2 text-sm text-slate-600" }, "Jump between questions and flag items to revisit later."),
+              {
+                className: practiceLayout
+                  ? "self-start rounded-[2rem] bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
+                  : "rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200",
+              },
+              React.createElement("h2", { className: practiceLayout ? "text-base font-semibold tracking-tight" : "text-xl font-semibold tracking-tight" }, "Navigator"),
+              !practiceLayout && React.createElement("p", { className: "mt-2 text-sm text-slate-600" }, "Jump between questions and flag items to revisit later."),
+              practiceLayout &&
+                React.createElement("p", { className: "mt-1 text-xs text-slate-500" }, "Green = right, red = wrong, blue = current."),
               React.createElement(
                 "div",
-                { className: "mt-4 grid grid-cols-3 gap-3" },
+                { className: practiceLayout ? "mt-3 grid grid-cols-5 gap-1.5" : "mt-4 grid grid-cols-3 gap-3" },
                 ...questions.map((question, index) =>
                 React.createElement(
                   "button",
                   {
                     key: question.id,
-                      onClick: () => goToQuestion(index),
-                      className: `rounded-2xl border px-3 py-4 text-sm font-medium transition ${reviewClass(
+                      onClick: () => {
+                        goToQuestion(index);
+                        if (practiceLayout) scrollToQuestionTop();
+                      },
+                      className: `${practiceLayout ? "rounded-xl px-1 py-2 text-xs" : "rounded-2xl px-3 py-4 text-sm"} border font-medium transition ${reviewClass(
                         question,
                         index === session.currentIndex
                       )}`,
@@ -2347,14 +2411,14 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
             ),
             React.createElement(
               "div",
-              { className: "rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200" },
+              { id: "question-card", className: "scroll-mt-4 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200" },
               currentQuestion &&
                 React.createElement(
                   React.Fragment,
                   null,
                   React.createElement(
                     "div",
-                    { className: "mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between" },
+                    { className: `${practiceLayout ? "mb-3" : "mb-5"} flex flex-col gap-3 md:flex-row md:items-start md:justify-between` },
                     React.createElement(
                       "div",
                       null,
@@ -2383,29 +2447,41 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                   React.createElement(
                     "div",
                     { className: "space-y-4" },
-                    React.createElement(QuestionImage, {
-                      src: currentQuestion.promptImage,
-                      alt: `Question ${currentQuestion.id} prompt`,
-                    }),
-                    React.createElement(QuestionImage, {
-                      src: currentQuestion.figureImage,
-                      alt: `Question ${currentQuestion.id} figure`,
-                    }),
                     React.createElement(
                       "div",
-                      { className: "grid gap-3 md:grid-cols-2" },
+                      {
+                        // Practice exams: question text and picture side by side on wide screens.
+                        className:
+                          practiceLayout && currentQuestion.figureImage && currentQuestion.promptImage
+                            ? "grid gap-3 lg:grid-cols-2 lg:items-start"
+                            : "space-y-4",
+                      },
+                      React.createElement(QuestionImage, {
+                        src: currentQuestion.promptImage,
+                        alt: `Question ${currentQuestion.id} prompt`,
+                        maxHeight: practiceLayout ? "50vh" : undefined,
+                      }),
+                      React.createElement(QuestionImage, {
+                        src: currentQuestion.figureImage,
+                        alt: `Question ${currentQuestion.id} figure`,
+                        maxHeight: practiceLayout ? "50vh" : undefined,
+                      })
+                    ),
+                    React.createElement(
+                      "div",
+                      { className: practiceLayout ? "grid grid-cols-2 gap-2 md:grid-cols-4" : "grid gap-3 md:grid-cols-2" },
                       ...VALID_OPTIONS.map((optionId) =>
                         React.createElement(
                           "button",
                           {
                             key: optionId,
                             onClick: () => selectOption(currentQuestion.id, optionId),
-                            className: `rounded-2xl border p-5 text-left transition ${optionClass(optionId, currentQuestion)}`,
+                            className: `rounded-2xl border text-left transition ${practiceLayout ? "px-4 py-2" : "p-5"} ${optionClass(optionId, currentQuestion)}`,
                           },
                           React.createElement("div", { className: "text-lg font-semibold uppercase" }, `${optionId}.`),
                           React.createElement(
                             "div",
-                            { className: "mt-3 h-4 text-xs text-slate-500" },
+                            { className: `${practiceLayout ? "mt-1" : "mt-3"} h-4 text-xs text-slate-500` },
                             exam.instantFeedback && session.checked[currentQuestion.id]
                               ? currentQuestion.correct === optionId
                                 ? "Correct answer"
@@ -2436,7 +2512,7 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                       session.checked[currentQuestion.id] &&
                       React.createElement(
                         "div",
-                        { className: "space-y-4" },
+                        { id: "practice-feedback", className: "scroll-mt-4 space-y-4" },
                         session.answers[currentQuestion.id] === currentQuestion.correct
                           ? React.createElement(
                               "div",
@@ -2458,8 +2534,17 @@ function ExamPlayer({ exam, sourceLabel, launchUrl, manifestUrl }) {
                             React.createElement(QuestionImage, {
                               src: currentQuestion.answerKeyImage,
                               alt: `Question ${currentQuestion.id} answer key`,
+                              maxHeight: practiceLayout ? "45vh" : undefined,
                             })
-                          )
+                          ),
+                        React.createElement(
+                          "button",
+                          {
+                            onClick: session.currentIndex < questions.length - 1 ? nextQuestion : openReview,
+                            className: "w-full rounded-2xl bg-slate-900 px-5 py-3 text-base font-semibold text-white hover:bg-slate-700",
+                          },
+                          session.currentIndex < questions.length - 1 ? "Next question" : "Go to Final Review"
+                        )
                       )
                   ),
                   React.createElement(
